@@ -61,16 +61,31 @@ def parse_paragraph_heuristic(p, rid_map: dict) -> str:
     text = re.sub(r'^[ \t\u3000]+', '', text)
     
     # 启发式大纲判定
-    # 1级标题: 一、 或 第一章 / 第一节
-    if re.match(r'^(第[一二三四五六七八九十百]+[章节]|[一二三四五六七八九十]+、)', text):
-        clean_title = re.sub(r'^(第[一二三四五六七八九十百]+[章节]|[一二三四五六七八九十]+、)\s*', '', text)
+    # 1级章标题: 第X章
+    if re.match(r'^第[一二三四五六七八九十百]+[章]\s*[:：]?', text):
+        return f'= {text}\n'
+    # 多级数字序号: 4.1.1.1 或 1.1.1.1 -> 4级
+    elif re.match(r'^\d+\.\d+\.\d+\.\d+\s+', text):
+        clean_title = re.sub(r'^\d+\.\d+\.\d+\.\d+\s*', '', text)
+        return f'==== {clean_title}\n'
+    # 3级数字序号: 4.1.1 或 1.1.1 -> 3级
+    elif re.match(r'^\d+\.\d+\.\d+\s+', text):
+        clean_title = re.sub(r'^\d+\.\d+\.\d+\s*', '', text)
+        return f'=== {clean_title}\n'
+    # 2级数字序号: 4.1 或 1.1 -> 2级
+    elif re.match(r'^\d+\.\d+\s+', text):
+        clean_title = re.sub(r'^\d+\.\d+\s*', '', text)
+        return f'== {clean_title}\n'
+    # 1级标题: 一、 或 第一节
+    elif re.match(r'^(第[一二三四五六七八九十百]+[节]|[一二三四五六七八九十]+、)', text):
+        clean_title = re.sub(r'^(第[一二三四五六七八九十百]+[节]|[一二三四五六七八九十]+、)\s*', '', text)
         return f'= {clean_title}\n'
     # 2级标题: （一）
     elif re.match(r'^[（\(][一二三四五六七八九十]+[）\)]', text):
         clean_title = re.sub(r'^[（\(][一二三四五六七八九十]+[）\)]\s*', '', text)
         return f'== {clean_title}\n'
     # 3级标题: 1. 或 1、
-    elif re.match(r'^([0-9]+\.|[0-9]+、)', text):
+    elif re.match(r'^([0-9]+\.|[0-9]+、)\s+', text):
         clean_title = re.sub(r'^([0-9]+\.|[0-9]+、)\s*', '', text)
         return f'=== {clean_title}\n'
     # 4级标题: （1）
@@ -172,22 +187,21 @@ def stage2_reconcile(staging_dir: Path, target_main_path: Path) -> dict:
     main_text = target_main_path.read_text(encoding='utf-8')
     staging_text = staging_typ.read_text(encoding='utf-8')
     
-    # 提取 main.typ 头部模板与宏
-    main_lines = main_text.splitlines()
-    header_lines = []
-    body_started = False
-    for line in main_lines:
-        s = line.strip()
-        if not body_started:
-            if s.startswith('#import ') or s.startswith('#show ') or s.startswith('#set ') or s.startswith('//'):
-                header_lines.append(line)
-            elif s == '':
+    # 提取 main.typ 头部模板与宏（从文件起始到第一个一级标题 '=' 之前的所有内容）
+    heading_match = re.search(r'(?m)^=\s+', main_text)
+    if heading_match:
+        header_block = main_text[:heading_match.start()].strip()
+    else:
+        main_lines = main_text.splitlines()
+        header_lines = []
+        for line in main_lines:
+            if line.strip().startswith('#') or line.strip().startswith('//') or not line.strip():
                 header_lines.append(line)
             else:
-                body_started = True
-                
-    header_block = "\n".join(header_lines).strip()
-    reconciled_content = header_block + "\n\n" + staging_text
+                break
+        header_block = "\n".join(header_lines).strip()
+        
+    reconciled_content = (header_block + "\n\n" + staging_text) if header_block else staging_text
     
     # 备份原 main.typ
     backup_path = target_main_path.with_suffix(".typ.bak")
@@ -207,7 +221,7 @@ def stage2_reconcile(staging_dir: Path, target_main_path: Path) -> dict:
     return {
         "status": "SUCCESS",
         "diagnostics": [
-            f"Preserved header macros ({len(header_lines)} lines)",
+            f"Preserved header macros ({len(header_block.splitlines())} lines)",
             f"Created backup at {backup_path}",
             f"Safely reconciled main.typ at {target_main_path}"
         ],
