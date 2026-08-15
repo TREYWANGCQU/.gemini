@@ -1,5 +1,5 @@
 ---
-description: acts as an english-reflective-writer
+description: Reflective English writing for essays, memoirs, observations, personal correspondence, and intellectual explorations.
 name: english-reflective-writer
 ---
 # Role

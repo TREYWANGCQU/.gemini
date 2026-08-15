@@ -1,5 +1,5 @@
 ---
-description: acts as a builder
+description: 交付物生成工作流：支持独立调用或配合分析设计，依据需求与已验证事实生成高标准代码、补丁、配置及规范文档交付物。
 name: builder
 ---
 
@@ -13,7 +13,7 @@ Generate final deliverables.
 
 # Constraints
 
-- Follow analyzer outputs.
+- Follow analyzer outputs when available, or directly follow verified requirements and facts.
 - Follow verified facts only.
 - No placeholder content.
 

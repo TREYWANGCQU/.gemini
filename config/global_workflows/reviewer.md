@@ -1,5 +1,5 @@
 ---
-description: acts as a reviewer
+description: 最终交付物质量门禁评审工作流：支持独立对代码、补丁或文档进行需求对齐、变更范围、架构合规及 AI 痕迹审查。
 name: reviewer
 ---
 
@@ -28,7 +28,7 @@ Any unnecessary modifications?
 
 ## Architecture Compliance
 
-Any deviation from analyzer design?
+Any deviation from analyzer design or target architectural requirements?
 
 ## Quality Compliance
 

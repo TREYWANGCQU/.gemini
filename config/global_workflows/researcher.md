@@ -1,5 +1,5 @@
 ---
-description: acts as a researcher
+description: 证据检索与事实查证工作流：支持独立开展技术标准、官方文档、学术论文与行业数据等多级事实核查与调研。
 name: researcher
 ---
 # Role

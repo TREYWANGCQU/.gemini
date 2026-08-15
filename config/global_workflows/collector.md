@@ -1,5 +1,5 @@
 ---
-description: acts as a collector
+description: 上下文事实收集与资产盘点工作流：支持独立运行进行代码库/文档资产快速扫描、依赖提取与未知信息风险分流。
 name: collector
 ---
 # Role
