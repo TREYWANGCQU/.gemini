@@ -36,6 +36,15 @@ def preprocess_typst_content(typst_code: str) -> str:
     code = re.sub(r'#set\s+text\s*\([\s\S]*?\)', '', code)
     code = re.sub(r'#set\s+par\s*\([\s\S]*?\)', '', code)
     
+    # 2. 清理自定义宏与辅助标签（#no-indent, #h(...), #v(...)）
+    code = re.sub(r'#no-indent\b', '', code)
+    code = re.sub(r'#h\([^)]*\)', '', code)
+    code = re.sub(r'#v\([^)]*\)', '', code)
+    
+    # 3. 解包 #text(font: ...)[content] 或 #text(...)[content]
+    while re.search(r'#text\([^)]*\)\[([\s\S]*?)\]', code):
+        code = re.sub(r'#text\([^)]*\)\[([\s\S]*?)\]', r'\1', code)
+    
     lines = code.splitlines()
     clean_lines = []
     
@@ -173,7 +182,23 @@ def run_publisher(input_path: Path, output_path: Path, template_path: Path = Non
                 if "word/document.xml" in z.namelist():
                     doc_xml = z.read("word/document.xml")
                     tree = ET.fromstring(doc_xml)
-                    headings = tree.findall('.//w:pStyle[@w:val="Heading1"]', NAMESPACES) +                                tree.findall('.//w:pStyle[@w:val="Heading2"]', NAMESPACES) +                                tree.findall('.//w:pStyle[@w:val="Heading3"]', NAMESPACES) +                                tree.findall('.//w:pStyle[@w:val="heading 1"]', NAMESPACES) +                                tree.findall('.//w:pStyle[@w:val="heading 2"]', NAMESPACES)
+                    heading_style_ids = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "heading 1", "heading 2", "heading 3", "heading 4", "Heading1", "Heading2", "Heading3", "Heading4"}
+                    if "word/styles.xml" in z.namelist():
+                        styles_xml = z.read("word/styles.xml")
+                        stree = ET.fromstring(styles_xml)
+                        for s in stree.findall('.//w:style', NAMESPACES):
+                            sid = s.attrib.get(f'{{{NAMESPACES["w"]}}}styleId')
+                            sname = s.find('.//w:name', NAMESPACES)
+                            sname_val = sname.attrib.get(f'{{{NAMESPACES["w"]}}}val', '').lower() if sname is not None else ''
+                            soutline = s.find('.//w:outlineLvl', NAMESPACES)
+                            if soutline is not None or 'heading' in sname_val:
+                                if sid:
+                                    heading_style_ids.add(sid)
+                                    
+                    headings = [
+                        p for p in tree.findall('.//w:p', NAMESPACES)
+                        if p.find('.//w:pStyle', NAMESPACES) is not None and p.find('.//w:pStyle', NAMESPACES).attrib.get(f'{{{NAMESPACES["w"]}}}val') in heading_style_ids
+                    ]
                     tables = tree.findall('.//w:tbl', NAMESPACES)
                     diagnostics.append(f"Quality Audit: Mapped {len(headings)} outline headings, {len(tables)} tables.")
                     
