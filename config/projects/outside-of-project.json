@@ -1,0 +1,12 @@
+{
+  "id": "outside-of-project",
+  "name": "Outside of Project",
+  "permissionGrants": {
+    "permissionGrants": {
+      "allow": [
+        "read_file(C:\\Users\\Reaticle\\.gemini\\antigravity\\conversations)"
+      ]
+    }
+  },
+  "updatedAt": "2026-07-22T01:31:17.797384800Z"
+}

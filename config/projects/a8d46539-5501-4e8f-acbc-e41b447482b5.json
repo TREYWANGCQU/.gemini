@@ -1,0 +1,21 @@
+{
+  "id": "a8d46539-5501-4e8f-acbc-e41b447482b5",
+  "name": "公文写作",
+  "projectResources": {
+    "resources": [
+      {
+        "gitFolder": {
+          "folderUri": "file:///d%3A/offices/Github/AI-automation/%E5%85%AC%E6%96%87%E5%86%99%E4%BD%9C",
+          "defaultBranch": "main"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "fileAccessPolicy": "AGENT_SETTING_POLICY_ASK",
+    "internetPolicy": "AGENT_SETTING_POLICY_ASK",
+    "autoExecutionPolicy": "CASCADE_COMMANDS_AUTO_EXECUTION_OFF",
+    "artifactReviewMode": "ARTIFACT_REVIEW_MODE_ALWAYS"
+  },
+  "updatedAt": "2026-06-18T07:53:14.376315Z"
+}

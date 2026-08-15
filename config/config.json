@@ -1,0 +1,36 @@
+{
+  "plugins": {
+    "modern-web-guidance-plugin": {
+      "enabled": true
+    },
+    "science": {
+      "enabled": true
+    }
+  },
+  "sidecars": {
+    "marxists_reader": {
+      "enabled": true,
+      "projectId": "edd42a8e-3db8-471d-9801-6d3e00607521"
+    },
+    "marxists_reader_routine": {
+      "enabled": false,
+      "projectId": "edd42a8e-3db8-471d-9801-6d3e00607521"
+    },
+    "test": {
+      "enabled": false,
+      "projectId": "edd42a8e-3db8-471d-9801-6d3e00607521"
+    }
+  },
+  "userSettings": {
+    "globalPermissionGrants": {
+      "allow": [
+        "read_url(marxists.org)",
+        "read_file(C:\\Users\\Reaticle\\config\\global_workflows)",
+        "mcp(chrome_devtools/evaluate_script)",
+        "execute_url(192.168.254.16)"
+      ]
+    },
+    "remoteControlHostname": "desktop-7e09fko-zero-galaxy",
+    "themeMode": "THEME_MODE_LIGHT"
+  }
+}

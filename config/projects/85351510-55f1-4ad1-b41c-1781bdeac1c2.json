@@ -1,0 +1,21 @@
+{
+  "id": "85351510-55f1-4ad1-b41c-1781bdeac1c2",
+  "name": "高层建筑消防平台",
+  "projectResources": {
+    "resources": [
+      {
+        "gitFolder": {
+          "folderUri": "file:///d%3A/offices/CQCIG/%E5%BE%81%E4%BF%A1%E5%85%AC%E5%8F%B8/%E5%B8%82%E5%9C%BA%E9%A1%B9%E7%9B%AE/%E6%9B%B4%E6%96%B0%E5%85%AC%E5%8F%B8/%E9%AB%98%E5%B1%82%E5%BB%BA%E7%AD%91%E6%B6%88%E9%98%B2%E5%B9%B3%E5%8F%B0",
+          "defaultBranch": "main"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "fileAccessPolicy": "AGENT_SETTING_POLICY_ASK",
+    "internetPolicy": "AGENT_SETTING_POLICY_ASK",
+    "autoExecutionPolicy": "CASCADE_COMMANDS_AUTO_EXECUTION_OFF",
+    "artifactReviewMode": "ARTIFACT_REVIEW_MODE_ALWAYS"
+  },
+  "updatedAt": "2026-07-22T13:26:20.651173500Z"
+}
