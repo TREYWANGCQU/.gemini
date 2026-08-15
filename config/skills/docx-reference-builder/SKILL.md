@@ -17,7 +17,7 @@ python "C:\Users\Reaticle\.gemini\config\skills\docx-reference-builder\scripts\e
 
 ## 3. 参数与工作模式
 - `--input`: 标杆 Word 文档路径（必填）。
-- `--output`: 生成的参考模板输出路径（必填，可输出至 `~/.gemini/config/templates/enterprise-reference.docx`）。
+- `--output`: 生成的参考模板输出路径（必填，可输出至 `~/.gemini/config/templates/reference-gbk.docx`）。
 
 ## 4. 输出契约
 标准 JSON 诊断信息，包含推导出的层级样式映射表：
@@ -29,6 +29,6 @@ python "C:\Users\Reaticle\.gemini\config\skills\docx-reference-builder\scripts\e
     "Synthesized Heading 1: 方正小标宋简体 44 (22pt)",
     "Synthesized Heading 2: 黑体 32 (16pt, Bold)"
   ],
-  "output_files": ["C:/.../enterprise-reference.docx"]
+  "output_files": ["C:/.../reference-gbk.docx"]
 }
 ```

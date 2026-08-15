@@ -22,7 +22,7 @@ python "C:\Users\Reaticle\.gemini\config\skills\typst-docx-publisher\scripts\pub
 ## 3. 参数契约与模板回退
 - `--input`: 输入 `.typ` 源码文件路径（必填）。
 - `--output`: 输出 `.docx` 目标文件路径（必填）。
-- `--template`: 样式参考母版（选填）。若未提供，优先寻找 `~/.gemini/config/templates/enterprise-reference.docx`，若不存在则回退至工作区 `reference.docx` 或 Pandoc 默认样式。
+- `--template`: 样式参考母版（选填）。若未提供，优先寻找 `~/.gemini/config/templates/reference-gbk.docx`，若不存在则回退至工作区 `reference.docx` 或 Pandoc 默认样式。
 
 ## 4. 输出契约
 脚本执行后向 stdout 输出标准 JSON 诊断信息：

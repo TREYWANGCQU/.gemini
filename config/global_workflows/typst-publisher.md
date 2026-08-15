@@ -34,7 +34,7 @@ flowchart TD
 2. 确认文档使用语义化大纲标签（`=` 至 `====`），未包含硬编码全局样式干扰。
 
 ## 步骤 2: 模板匹配与解析
-1. 依据文档类型匹配参考模板（优先级：项目指定 `--template` > 默认 `~/.gemini/config/templates/enterprise-reference.docx`）。
+1. 依据文档类型匹配参考模板（优先级：项目指定 `--template` > 默认 `~/.gemini/config/templates/reference-gbk.docx`）。
 2. 若指定模板不存在，提示用户选择已有模板或通过 `/docx-template-sync` 从标杆文档逆向生成。
 
 ## 步骤 3: 调度 `typst-docx-publisher`

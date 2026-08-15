@@ -15,19 +15,98 @@ NAMESPACES = {
     'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 }
 
+def to_chinese_num(n: int) -> str:
+    digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+    if n <= 10:
+        return digits[n]
+    elif n < 20:
+        return f"十{digits[n % 10] if n % 10 != 0 else ''}"
+    elif n < 100:
+        tens, rem = divmod(n, 10)
+        return f"{digits[tens]}十{digits[rem] if rem != 0 else ''}"
+    return str(n)
+
 def preprocess_typst_content(typst_code: str) -> str:
-    lines = typst_code.splitlines()
+    # 1. 移除 #import、#show 与 #set 规则
+    code = re.sub(r'#import\s+[^:\n]+(?::[^\n]*)?', '', typst_code)
+    code = re.sub(r'#show:\s*doc\s*=>\s*conf\s*\([\s\S]*?\)', '', code)
+    code = re.sub(r'#show\s+[^:\n]+:\s*set\s+[^\n]+', '', code)
+    code = re.sub(r'#show\s+[^:\n]+:\s*flush-left-list', '', code)
+    code = re.sub(r'#set\s+page\s*\([\s\S]*?\)', '', code)
+    code = re.sub(r'#set\s+text\s*\([\s\S]*?\)', '', code)
+    code = re.sub(r'#set\s+par\s*\([\s\S]*?\)', '', code)
+    
+    lines = code.splitlines()
     clean_lines = []
+    
+    # 计数器模拟 Typst @local/GBK-writing:0.1.0 逻辑
+    h2_cnt = 0
+    h3_cnt = 0
+    h4_cnt = 0
+    h5_cnt = 0
     
     for line in lines:
         stripped = line.strip()
-        if stripped.startswith('#import ') or stripped.startswith('#show '):
+        if stripped.startswith('//'):
             continue
-        if stripped.startswith('#set page(') or stripped.startswith('#set text('):
+        if stripped.startswith('#import ') or stripped.startswith('#show:') or stripped.startswith('#show '):
             continue
-        clean_lines.append(line)
-        
-    return "\n".join(clean_lines)
+        if stripped.startswith('#set '):
+            continue
+            
+        # 智能匹配 Typst 标题并对齐 GBK 序号
+        # Level 1: = 标题 (无序号 / 主标题)
+        # Level 2: == 二级标题 (注入 一、, 二、 若原标题未带)
+        # Level 3: === 三级标题 (注入 （一）, （二） 若原标题未带)
+        # Level 4: ==== 四级标题 (注入 1., 2. 若原标题未带)
+        # Level 5: ===== 五级标题 (注入 （1）, （2） 若原标题未带)
+        h_match = re.match(r'^(={1,5})\s+(.*)$', line)
+        if h_match:
+            eqs, title_body = h_match.groups()
+            level = len(eqs)
+            title_text = title_body.strip()
+            
+            if level == 1:
+                clean_lines.append(f"= {title_text}")
+            elif level == 2:
+                h2_cnt += 1
+                h3_cnt = 0
+                h4_cnt = 0
+                h5_cnt = 0
+                # 检查是否已含有 一、 或 第一章 等字样
+                if not re.match(r'^[一二三四五六七八九十百]+[、\.\s]|第[一二三四五六七八九十]+[章节条]', title_text):
+                    prefix = f"{to_chinese_num(h2_cnt)}、"
+                    clean_lines.append(f"== {prefix}{title_text}")
+                else:
+                    clean_lines.append(f"== {title_text}")
+            elif level == 3:
+                h3_cnt += 1
+                h4_cnt = 0
+                h5_cnt = 0
+                if not re.match(r'^[（(][一二三四五六七八九十百]+[)）]', title_text):
+                    prefix = f"（{to_chinese_num(h3_cnt)}）"
+                    clean_lines.append(f"=== {prefix}{title_text}")
+                else:
+                    clean_lines.append(f"=== {title_text}")
+            elif level == 4:
+                h4_cnt += 1
+                h5_cnt = 0
+                if not re.match(r'^\d+[\.\、\s]', title_text):
+                    prefix = f"{h4_cnt}. "
+                    clean_lines.append(f"==== {prefix}{title_text}")
+                else:
+                    clean_lines.append(f"==== {title_text}")
+            elif level == 5:
+                h5_cnt += 1
+                if not re.match(r'^[（(]\d+[)）]', title_text):
+                    prefix = f"（{h5_cnt}）"
+                    clean_lines.append(f"===== {prefix}{title_text}")
+                else:
+                    clean_lines.append(f"===== {title_text}")
+        else:
+            clean_lines.append(line)
+            
+    return "\n".join(clean_lines).strip()
 
 def run_publisher(input_path: Path, output_path: Path, template_path: Path = None) -> dict:
     diagnostics = []
@@ -44,17 +123,27 @@ def run_publisher(input_path: Path, output_path: Path, template_path: Path = Non
     cleaned_typ = preprocess_typst_content(typ_content)
     
     ref_arg = []
-    if template_path and template_path.exists():
-        ref_arg = [f"--reference-doc={template_path}"]
-        diagnostics.append(f"Using explicit template: {template_path}")
-    else:
-        global_ref = Path.home() / ".gemini" / "config" / "templates" / "enterprise-reference.docx"
-        if global_ref.exists():
-            ref_arg = [f"--reference-doc={global_ref}"]
-            diagnostics.append(f"Using global template: {global_ref}")
+    resolved_template = None
+    if template_path:
+        if template_path.exists():
+            resolved_template = template_path
+        else:
+            global_candidate = Path.home() / ".gemini" / "config" / "templates" / template_path.name
+            if global_candidate.exists():
+                resolved_template = global_candidate
+            elif (Path.home() / ".gemini" / "config" / "templates" / f"{template_path.name}.docx").exists():
+                resolved_template = Path.home() / ".gemini" / "config" / "templates" / f"{template_path.name}.docx"
+
+    if not resolved_template:
+        canonical_ref = Path.home() / ".gemini" / "config" / "templates" / "reference-gbk.docx"
+        if canonical_ref.exists():
+            resolved_template = canonical_ref
         elif Path("reference.docx").exists():
-            ref_arg = ["--reference-doc=reference.docx"]
-            diagnostics.append("Using workspace reference.docx")
+            resolved_template = Path("reference.docx")
+
+    if resolved_template and resolved_template.exists():
+        ref_arg = [f"--reference-doc={resolved_template}"]
+        diagnostics.append(f"Using template: {resolved_template}")
             
     with tempfile.NamedTemporaryFile(suffix=".typ", delete=False, mode='w', encoding='utf-8') as tmp_typ:
         tmp_typ.write(cleaned_typ)
