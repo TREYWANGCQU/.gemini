@@ -140,7 +140,9 @@ def preprocess_typst_content(typst_code: str) -> str:
         if not stripped:
             clean_lines.append("")
             continue
-        if stripped.startswith('//') or stripped.startswith('#'):
+        if stripped.startswith('//'):
+            continue
+        if stripped.startswith('#') and not any(stripped.startswith(prefix) for prefix in ['#table', '#figure', '#image', '#grid', '#rect', '#box', '#list', '#enum', '#link']):
             continue
             
         # 智能匹配 Typst 标题并对齐 GBK 序号与 Word 样式层级
