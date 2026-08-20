@@ -43,12 +43,26 @@ def extract_lyrics_from_markdown(content: str) -> Dict[str, Any]:
         if line.startswith("#") or ":" in line and not line.startswith("[") and any(k in line.lower() for k in ["style", "vocal", "instrumentation"]):
             continue
 
-        # Check section header: e.g. [Verse 1], [Bridge - Melodic Rap], [Chorus], [Bridge: Funky breakdown, "Yongchuanosaurus" ...]
+        # Check section header: e.g. [Verse 1], [Bridge - Melodic Rap], [Chorus], [Bridge: Funky breakdown...]
         section_match = re.match(r'^\[([^\]]+)\]$', line)
         if section_match:
             tag = section_match.group(1).strip()
             if "structure" in tag.lower() or "allocation" in tag.lower():
                 continue
+            
+            # Check if tag is purely an instrumental/arrangement cue (e.g. [Delicate fingerstyle...])
+            is_instrumental_cue = any(k in tag.lower() for k in [
+                "guitar", "flute", "piano", "ambience", "breeze", "fade", "fades out", 
+                "drum", "synth", "strings", "solo", "instrumental", "beat"
+            ]) and not any(k in tag.lower() for k in [
+                "verse", "chorus", "bridge", "intro", "outro", "spoken", "whisper", 
+                "recitation", "opera", "vocal", "rap", "hook", "pre-chorus", "climax", "end"
+            ])
+
+            if is_instrumental_cue:
+                current_section["cues"].append(tag)
+                continue
+
             if current_section["lines"] or current_section["cues"]:
                 sections.append(current_section)
             sec_type = "Verse"

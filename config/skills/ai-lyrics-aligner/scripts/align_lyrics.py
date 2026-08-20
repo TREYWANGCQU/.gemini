@@ -127,12 +127,44 @@ def detect_vocal_activity_segments(
     return segments
 
 
+def find_companion_vocal_track(audio_path: str) -> str:
+    """Find companion isolated vocal track in the same directory if available."""
+    if not os.path.exists(audio_path):
+        return audio_path
+    
+    abs_path = os.path.abspath(audio_path)
+    dir_name = os.path.dirname(abs_path)
+    base_name = os.path.basename(abs_path)
+    
+    # If the provided audio is already a vocal stem
+    if "vocals" in base_name.lower():
+        return audio_path
+        
+    # Search for companion vocal stems
+    if dir_name and os.path.exists(dir_name):
+        candidates = []
+        for f in os.listdir(dir_name):
+            if f.endswith(".wav") and "vocals" in f.lower():
+                candidates.append(os.path.join(dir_name, f))
+        
+        # Prefer vocal track stem
+        if candidates:
+            # Sort: prioritize standard stem (1_*Vocals*.wav) or reaticle vocals
+            candidates.sort(key=lambda x: (
+                0 if "vocals_reaticle" in x.lower() else (1 if "(vocals)" in x.lower() else 2),
+                len(x)
+            ))
+            return candidates[0]
+
+    return audio_path
+
+
 def cluster_segments_for_sections(
     segments: List[Tuple[float, float]],
     num_sections: int,
     sec_weights: List[float]
 ) -> List[Tuple[float, float]]:
-    """Cluster raw VAD segments into section-level time intervals using optimal acoustic boundaries."""
+    """Cluster raw VAD segments into section-level time intervals using dynamic acoustic silence boundaries."""
     if not segments:
         return []
     if num_sections <= 1:
@@ -141,8 +173,7 @@ def cluster_segments_for_sections(
     active_start = segments[0][0]
     active_end = segments[-1][1]
 
-    # Target boundaries derived from major acoustic silence gaps (>0.47s)
-    # Filter candidate splits
+    # Collect all silence gaps between adjacent speech segments
     all_splits = []
     for i in range(len(segments) - 1):
         seg_end = segments[i][1]
@@ -155,37 +186,23 @@ def cluster_segments_for_sections(
             "gap": gap
         })
 
-    # Outro detection: significant gap (>0.6s) near the tail (>80% duration)
-    outro_boundary = None
-    for cand in reversed(all_splits):
-        if cand["end_time"] >= active_start + (active_end - active_start) * 0.80 and cand["gap"] >= 0.6:
-            outro_boundary = cand["end_time"]
-            break
+    needed_cuts = num_sections - 1
+    if not all_splits:
+        # Uniform fallback
+        step = (active_end - active_start) / num_sections
+        return [(active_start + i*step, active_start + (i+1)*step) for i in range(num_sections)]
 
-    # If num_sections == 9 (standard 9-section form)
-    # Known section transitions in the vocal track
-    key_cuts = [27.48, 37.32, 56.88, 65.92, 75.90, 83.52, 90.66, 105.08, 133.72]
+    # Dynamic top-N gap selection
+    sorted_splits = sorted(all_splits, key=lambda x: x["gap"], reverse=True)
+    top_splits = sorted_splits[:needed_cuts]
+    top_splits.sort(key=lambda x: x["end_time"])
     
-    # Generic fallback if segments differ:
-    if len(segments) >= 20 and num_sections == 9:
-        top_cuts = key_cuts
-    else:
-        # Dynamic gap selection
-        usable_splits = [c for c in all_splits if not outro_boundary or c["end_time"] <= outro_boundary]
-        sorted_by_gap = sorted(usable_splits, key=lambda x: x["gap"], reverse=True)
-        top_cuts = sorted([s["end_time"] for s in sorted_by_gap[:num_sections - 1]])
-        if outro_boundary:
-            top_cuts.append(outro_boundary)
-
     sec_intervals = []
     curr_s = active_start
-    for cut in top_cuts[:num_sections - 1]:
-        sec_intervals.append((curr_s, cut))
-        next_s = [s[0] for s in segments if s[0] >= cut - 0.05]
-        curr_s = next_s[0] if next_s else cut
-
-    last_e = outro_boundary if outro_boundary else active_end
-    sec_intervals.append((curr_s, last_e))
+    for s in top_splits:
+        sec_intervals.append((curr_s, s["end_time"]))
+        curr_s = s["start_time"]
+    sec_intervals.append((curr_s, active_end))
 
     return sec_intervals
 
@@ -195,13 +212,16 @@ def align_lyrics_with_vocal_track(
     audio_path: str
 ) -> Dict[str, Any]:
     """Align lyric sections and lines against audio waveform energy profile."""
-    energies, duration, frame_ms = analyze_wav_energy(audio_path)
+    # Check if companion vocal stem is available for VAD precision
+    vocal_track_path = find_companion_vocal_track(audio_path)
+    
+    energies, duration, frame_ms = analyze_wav_energy(vocal_track_path)
     segments = detect_vocal_activity_segments(
         energies,
         duration,
         frame_ms,
-        threshold_ratio=0.10,
-        min_speech_duration_s=0.5,
+        threshold_ratio=0.08,
+        min_speech_duration_s=0.4,
         min_silence_duration_s=0.4
     )
 
@@ -269,8 +289,44 @@ def align_lyrics_with_vocal_track(
                     "is_adlib": l_item.get("is_adlib", False),
                     "raw": l_item.get("raw", "")
                 })
-        elif len(contained_segs) > 1 and len(contained_segs) < len(lines):
-            # Map lines across contained sub-segments (e.g. Bridge)
+        elif len(contained_segs) > len(lines):
+            # Optimal phrase clustering: find top (len(lines) - 1) gaps to partition contained_segs into len(lines) phrases
+            k_lines = len(lines)
+            n_segs = len(contained_segs)
+            
+            # Gaps between adjacent contained segments
+            int_gaps = []
+            for g_i in range(n_segs - 1):
+                int_gaps.append({
+                    "idx": g_i,
+                    "gap": contained_segs[g_i+1][0] - contained_segs[g_i][1]
+                })
+            
+            # Top (k_lines - 1) gaps determine partition points
+            sorted_gaps = sorted(int_gaps, key=lambda x: x["gap"], reverse=True)
+            cut_indices = sorted([g["idx"] for g in sorted_gaps[:k_lines - 1]])
+            
+            # Build partitions
+            groups = []
+            start_idx = 0
+            for cut_idx in cut_indices:
+                groups.append(contained_segs[start_idx : cut_idx + 1])
+                start_idx = cut_idx + 1
+            groups.append(contained_segs[start_idx:])
+            
+            for j, l_item in enumerate(lines):
+                grp = groups[j]
+                grp_start = grp[0][0]
+                grp_end = grp[-1][1]
+                aligned_lines.append({
+                    "text": l_item["text"],
+                    "start_time": round(grp_start, 2),
+                    "end_time": round(grp_end, 2),
+                    "is_adlib": l_item.get("is_adlib", False),
+                    "raw": l_item.get("raw", "")
+                })
+        elif len(contained_segs) > 0 and len(contained_segs) < len(lines):
+            # Map lines across contained sub-segments
             tot_l = len(lines)
             num_sub = len(contained_segs)
             base_cnt = tot_l // num_sub
@@ -293,20 +349,6 @@ def align_lyrics_with_vocal_track(
                         "is_adlib": l_item.get("is_adlib", False),
                         "raw": l_item.get("raw", "")
                     })
-        elif len(contained_segs) > len(lines) and len(lines) == 3:
-            # Multi-segment Chorus 1 (e.g. 7 subsegments partitioned into 3 phrases: 3, 3, 1)
-            c1 = (contained_segs[0][0], contained_segs[2][1])
-            c2 = (contained_segs[3][0], contained_segs[5][1])
-            c3 = (contained_segs[6][0], contained_segs[-1][1])
-            c_phrases = [c1, c2, c3]
-            for j, l_item in enumerate(lines):
-                aligned_lines.append({
-                    "text": l_item["text"],
-                    "start_time": round(c_phrases[j][0], 2),
-                    "end_time": round(c_phrases[j][1], 2),
-                    "is_adlib": l_item.get("is_adlib", False),
-                    "raw": l_item.get("raw", "")
-                })
         else:
             l_dur = sec_dur / max(1, len(lines))
             for j, l_item in enumerate(lines):
