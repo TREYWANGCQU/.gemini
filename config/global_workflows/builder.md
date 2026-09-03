@@ -36,7 +36,8 @@ Documents
 Code:
 
 - Every code block begins with file path.
-- Keep modifications minimal.
+- Keep modifications minimal: prefer in-place diff patches on baseline configurations over generating arbitrary full configurations from scratch.
+- Schema whitelist enforcement: Configurations and system invocations must strictly trace back to collector/analyzer-verified baseline Schemas; never invent unverified parameters or blend obsolete legacy syntax from different major versions.
 
 Documents:
 

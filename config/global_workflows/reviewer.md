@@ -28,7 +28,8 @@ Any unnecessary modifications?
 
 ## Architecture Compliance
 
-Any deviation from analyzer design or target architectural requirements?
+- Any deviation from analyzer design or target architectural requirements?
+- Any version drift or unverified legacy syntax/APIs against the target version SSOT baseline?
 
 ## Quality Compliance
 
@@ -37,6 +38,7 @@ Code:
 - Readability
 - Maintainability
 - Error handling
+- Schema & version compliance (no deprecated legacy configurations or invent-on-the-fly parameters)
 
 Documents:
 

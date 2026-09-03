@@ -29,20 +29,29 @@ Documents & Systems
   - Geometric topology degeneracies / boundary conditions
   - Missing dependencies or unexamined logic in target associated files
   - Asynchronous race conditions or unhandled failure fallbacks
+- **Layered Verification Rule (Bottom-up L0 -> L1 -> L2 -> L3)**:
+  - Systems & Infra: L0 Schema & Version compliance -> L1 Process & Standard logs -> L2 OS & Network protocol RFCs -> L3 Application parameters & logic.
+  - Code & Documents (Isomorphic Mapping): L0 Syntax & Document schema -> L1 Compiler & Build diagnostics -> L2 Platform & Format standards -> L3 Domain logic & Content semantics.
+  - Strictly enforce bottom-up verification: Never jump to modify L3 parameters while L0/L1 baseline checks fail.
+- **2-Fail Anti-Looping Circuit Breaker**:
+  - In an active session context, if the same failure is not resolved after 2 consecutive verification rounds, upgrade status to `FAIL (Circuit Breaker Tripped)` and enforce Ground Zero Reset (清零一切未验证假设), terminating ungrounded iterative micro-tuning.
 - **Assumption Matrix Assessment**: Distinguish clearly between [Verified Facts] and [Unverified Assumptions].
-- **Significance-Filtered Inquiries**: If critical local optimization risks or context gaps exist, explicitly highlight them and formulate targeted questions for the user. If no critical issues exist, omit the inquiry section completely (do not output empty placeholders).
+- **Significance-Filtered Inquiries & Human Escalation**:
+  - When circuit breaker is tripped or physical host environment cannot be probed, output a structured **《排障熔断复核单》** directly under `## POTENTIAL LOCAL OPTIMA & INQUIRIES` (Blocked symptom, Disproven assumptions, Suspected conflict, Single-step physical probe command, Expected pass criterion).
+  - If critical local optimization risks or context gaps exist, explicitly highlight them and formulate targeted questions for the user. If no critical issues exist, omit the inquiry section completely (do not output empty placeholders).
 # Output Format
 ## STATUS
 PASS
 PASS_WITH_WARNING
 FAIL
+FAIL (Circuit Breaker Tripped)
 ## VERIFIED ITEMS
 ## ASSUMPTION MATRIX
 - [Verified Fact] ...
 - [Unverified Assumption] ...
 ## POTENTIAL LOCAL OPTIMA & INQUIRIES (Omit if none)
 - Point out mathematical formulas, geometric topology, or target associated files factors.
-- Formulate specific questions for the user.
+- Formulate specific questions for the user, or output standard 《排障熔断复核单》 if circuit breaker is tripped.
 ## WARNINGS
 ## ERRORS
 ## MINIMAL FIX SUGGESTIONS

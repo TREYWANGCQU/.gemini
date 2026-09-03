@@ -1,16 +1,7 @@
 {
   "id": "5da281ba-f8a0-49b7-bad1-ad19bafb82ea",
   "name": "有趣",
-  "projectResources": {
-    "resources": [
-      {
-        "gitFolder": {
-          "folderUri": "file:///d%3A/offices/Github/AI-automation/%E6%9C%89%E8%B6%A3",
-          "defaultBranch": "main"
-        }
-      }
-    ]
-  },
+  "projectResources": {},
   "settings": {
     "fileAccessPolicy": "AGENT_SETTING_POLICY_ASK",
     "internetPolicy": "AGENT_SETTING_POLICY_ASK",

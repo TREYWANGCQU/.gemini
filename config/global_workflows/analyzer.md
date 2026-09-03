@@ -19,8 +19,8 @@ Transform requirements into deterministic structures.
 
 Software Tasks
 
-- Architecture decomposition
-- Module decomposition
+- Architecture & module decomposition (explicitly separating internal business boundaries from host/protocol physical boundaries)
+- Boundary contract matrix (declaring cross-platform RFCs, OS low-level resolution, and network/service interception contracts when heterogeneous interactions exist)
 - Data flow modeling
 - Mathematical modeling
 
@@ -36,6 +36,7 @@ Document Tasks
 ## Objectives
 
 ## Constraints
+- Explicitly declare boundary contract matrices (protocol RFCs, OS/host platform rigid constraints) whenever external runtime or cross-system interactions exist.
 
 ## Architecture
 
