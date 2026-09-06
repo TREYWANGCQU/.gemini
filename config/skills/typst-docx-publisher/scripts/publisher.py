@@ -78,12 +78,12 @@ def replace_align_blocks(code: str) -> str:
         m = pattern.search(code)
         if not m:
             break
-        align_type = m.group(1)
+        align_type = m.group(1).lower()
         start_bracket = m.end() - 1
         inner, end_idx = extract_balanced_brackets(code, start_bracket)
         if end_idx != -1:
             font_match = re.search(r'#text\([^)]*font:\s*([^,\])]+)', inner)
-            font_name = "KaiTi"
+            font_name = "FangSong" if align_type == "right" else "KaiTi"
             text_content = inner
             if font_match:
                 font_raw = font_match.group(1).strip()
@@ -99,14 +99,18 @@ def replace_align_blocks(code: str) -> str:
                 text_content = re.sub(r'#text\([^)]*\)\[([\s\S]*?)\]', r'\1', text_content)
             text_content = re.sub(r'#text\([^)]*\)', '', text_content).strip()
             
-            replacement = f"\n\n[[[ALIGNCENTER:{font_name}]]] {text_content} [[[ENDALIGNCENTER]]]\n\n"
+            lines = [l.strip() for l in re.split(r'\\|\n', text_content) if l.strip()]
+            tag = f"ALIGN{align_type.upper()}:{font_name}"
+            end_tag = f"ENDALIGN{align_type.upper()}"
+            replacements = [f"[[[{tag}]]] {l} [[[{end_tag}]]]" for l in lines]
+            replacement = "\n\n" + "\n\n".join(replacements) + "\n\n"
             code = code[:m.start()] + replacement + code[end_idx:]
         else:
             break
     return code
 
 def preprocess_typst_content(typst_code: str) -> str:
-    # 1. 移除全局配置
+    # 1. 移除全局配置与宏
     code = re.sub(r'#import\s+[^:\n]+(?::[^\n]*)?', '', typst_code)
     code = re.sub(r'#show:\s*doc\s*=>\s*conf\s*\([\s\S]*?\)', '', code)
     code = re.sub(r'#show\s+[^:\n]+:\s*set\s+[^\n]+', '', code)
@@ -120,10 +124,40 @@ def preprocess_typst_content(typst_code: str) -> str:
     code = re.sub(r'#h\([^)]*\)', '', code)
     code = re.sub(r'#v\([^)]*\)', '', code)
     
-    # 3. 提取并安全标记 #align(center)[...]（支持任意嵌套 #text）
+    # 3. 展开或替换自定义 #todo[...] 宏
+    while True:
+        m = re.search(r'#todo\s*\[', code)
+        if not m:
+            break
+        start_pos = m.start()
+        start_bracket = m.end() - 1
+        inner, end_idx = extract_balanced_brackets(code, start_bracket)
+        if end_idx != -1:
+            code = code[:start_pos] + f"【待补充：{inner.strip()}】" + code[end_idx:]
+        else:
+            break
+
+    # 4. 彻底移除所有 #let 定义（包括跨行宏定义与嵌套表达式）
+    while True:
+        m = re.search(r'#let\s+[a-zA-Z0-9_-]+(?:\([^)]*\))?\s*=', code)
+        if not m:
+            break
+        start_pos = m.start()
+        bracket_pos = code.find('[', m.end())
+        line_end = code.find('\n', m.end())
+        if bracket_pos != -1 and (line_end == -1 or bracket_pos - m.end() < 100):
+            _, end_idx = extract_balanced_brackets(code, bracket_pos)
+            if end_idx != -1:
+                while end_idx < len(code) and code[end_idx] in [']', ')', ';', ' ']:
+                    end_idx += 1
+                code = code[:start_pos] + code[end_idx:]
+                continue
+        code = code[:start_pos] + (code[line_end:] if line_end != -1 else '')
+    
+    # 5. 提取并安全标记 #align(...)
     code = replace_align_blocks(code)
     
-    # 解包剩余 #text(...)
+    # 6. 解包剩余 #text(...)
     while re.search(r'#text\([^)]*\)\[([\s\S]*?)\]', code):
         code = re.sub(r'#text\([^)]*\)\[([\s\S]*?)\]', r'\1', code)
         
@@ -301,15 +335,16 @@ def postprocess_docx_xml(docx_path: Path):
                     rPr.append(szCs)
                 szCs.attrib[w_val] = "44"
 
-        # 2. 居中段落 / 副标题 / 作者署名
-        align_match = re.search(r'\[+ALIGNCENTER:([A-Za-z0-9]+)\]+', p_text)
+        # 2. 对齐段落 / 居中 / 靠右 / 副标题 / 署名
+        align_match = re.search(r'\[+ALIGN(CENTER|RIGHT|LEFT):([A-Za-z0-9]+)\]+', p_text)
         if align_match:
             modified = True
-            font_tag = align_match.group(1)
-            font_name = font_map.get(font_tag, "方正楷体_GBK")
+            align_dir = align_match.group(1).lower()
+            font_tag = align_match.group(2)
+            font_name = font_map.get(font_tag, "方正仿宋_GBK" if align_dir == "right" else "方正楷体_GBK")
             
-            cleaned_body = re.sub(r'\[+ALIGNCENTER:[A-Za-z0-9]+\]+', '', p_text)
-            cleaned_body = re.sub(r'\[+ENDALIGNCENTER\]+', '', cleaned_body).strip()
+            cleaned_body = re.sub(r'\[+ALIGN(CENTER|RIGHT|LEFT):[A-Za-z0-9]+\]+', '', p_text)
+            cleaned_body = re.sub(r'\[+ENDALIGN(CENTER|RIGHT|LEFT)\]+', '', cleaned_body).strip()
             
             first = True
             for r in runs:
@@ -328,13 +363,13 @@ def postprocess_docx_xml(docx_path: Path):
             if pStyle is None:
                 pStyle = ET.Element(w_pStyle)
                 pPr.insert(0, pStyle)
-            pStyle.attrib[w_val] = "Subtitle"
+            pStyle.attrib[w_val] = "Subtitle" if align_dir == "center" else "Normal"
             
             jc = pPr.find('.//w:jc', ns)
             if jc is None:
                 jc = ET.Element(w_jc)
                 pPr.append(jc)
-            jc.attrib[w_val] = "center"
+            jc.attrib[w_val] = align_dir
             
             ind = pPr.find('.//w:ind', ns)
             if ind is not None:
@@ -369,6 +404,81 @@ def postprocess_docx_xml(docx_path: Path):
                     szCs = ET.Element(w_szCs)
                     rPr.append(szCs)
                 szCs.attrib[w_val] = "32"
+
+        # 3. 正文首行缩进 2 字符 (针对非标题、非编号列表、非署名对齐的正文段落)
+        p_style_elem = p.find('.//w:pStyle', ns)
+        p_style_val = p_style_elem.attrib.get(w_val) if p_style_elem is not None else None
+        has_num = p.find('.//w:numPr', ns) is not None
+        is_title_or_align = "DOCUMENTTITLE" in p_text or align_match
+        is_heading_style = p_style_val in {"Title", "Heading1", "Heading2", "Heading3", "Heading4", "heading 1", "heading 2", "heading 3", "heading 4", "1", "2", "3", "4"}
+        
+        if not has_num and not is_title_or_align and not is_heading_style:
+            if p_style_val in ['BodyText', 'FirstParagraph', 'Normal', 'a', None]:
+                pPr = p.find('.//w:pPr', ns)
+                if pPr is None:
+                    pPr = ET.Element(w_pPr)
+                    p.insert(0, pPr)
+                ind = pPr.find('.//w:ind', ns)
+                if ind is None:
+                    ind = ET.Element(w_ind)
+                    ind.attrib[f"{{{ns['w']}}}firstLineChars"] = "200"
+                    ind.attrib[f"{{{ns['w']}}}firstLine"] = "640"
+                    pPr.append(ind)
+                    modified = True
+                elif not ind.attrib.get(f"{{{ns['w']}}}firstLineChars") and not ind.attrib.get(f"{{{ns['w']}}}firstLine"):
+                    ind.attrib[f"{{{ns['w']}}}firstLineChars"] = "200"
+                    ind.attrib[f"{{{ns['w']}}}firstLine"] = "640"
+                    modified = True
+
+    # 4. 高亮与着色所有 【待补充：...】 标记
+    for p in tree.findall('.//w:p', ns):
+        runs_list = list(p.findall('.//w:r', ns))
+        for r in runs_list:
+            t_elem = r.find('.//w:t', ns)
+            if t_elem is None or not t_elem.text or '【待补充：' not in t_elem.text:
+                continue
+            text = t_elem.text
+            parts = re.split(r'(【待补充：.*?】)', text)
+            if len(parts) <= 1:
+                continue
+            r_idx = list(p).index(r)
+            p.remove(r)
+            offset = 0
+            for part in parts:
+                if not part:
+                    continue
+                new_r = ET.Element(f"{{{ns['w']}}}r")
+                new_rPr = ET.Element(w_rPr)
+                new_r.append(new_rPr)
+                
+                rPr_orig = r.find('.//w:rPr', ns)
+                if rPr_orig is not None:
+                    for child in rPr_orig:
+                        new_rPr.append(ET.fromstring(ET.tostring(child)))
+                        
+                if part.startswith('【待补充：') and part.endswith('】'):
+                    if new_rPr.find('.//w:b', ns) is None:
+                        new_rPr.append(ET.Element(f"{{{ns['w']}}}b"))
+                    col = new_rPr.find('.//w:color', ns)
+                    if col is None:
+                        col = ET.Element(f"{{{ns['w']}}}color")
+                        new_rPr.append(col)
+                    col.attrib[w_val] = "B91C1C"
+                    shd = new_rPr.find('.//w:shd', ns)
+                    if shd is None:
+                        shd = ET.Element(f"{{{ns['w']}}}shd")
+                        new_rPr.append(shd)
+                    shd.attrib[w_val] = "clear"
+                    shd.attrib[f"{{{ns['w']}}}color"] = "auto"
+                    shd.attrib[f"{{{ns['w']}}}fill"] = "FEE2E2"
+                    
+                new_t = ET.Element(f"{{{ns['w']}}}t")
+                new_t.attrib['{http://www.w3.org/XML/1998/namespace}space'] = 'preserve'
+                new_t.text = part
+                new_r.append(new_t)
+                p.insert(r_idx + offset, new_r)
+                offset += 1
+            modified = True
 
     if modified:
         all_files["word/document.xml"] = ET.tostring(tree, encoding='utf-8', xml_declaration=True)
