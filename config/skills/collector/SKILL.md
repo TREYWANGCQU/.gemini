@@ -17,7 +17,7 @@ Collect all available facts before analysis begins, using a token-efficient prev
 - No raw full-text copy-pasting of large files (>50 lines, or >100 lines if highly cohesive and crucial). Use targeted snippets, key signatures, and links instead.
 # Responsibilities
 For software projects:
-- Scan codebase structure and map out file layouts first (limit search depth/paths to avoid scanning unrelated directories).
+- Scan codebase structure and map out file layouts first using `scripts/preview_tree.py` (limit search depth/paths to avoid scanning unrelated directories and blowing up token limits).
 - Extract high-level interfaces and type signatures (not implementation details).
 - Extract dependency graph and runtime constraints with exact versions (SemVer, Docker Tag, or Git Commit; do not record abstract unversioned components as verified facts).
 - Mount official single-source-of-truth (SSOT) baselines (official sample configs, schema specs) into assets when external runtime/middleware is involved.
@@ -25,6 +25,33 @@ For document projects:
 - Preview document outlines, tables of contents, or introductory summaries first.
 - Extract only user requirements, standards, and boundary conditions relevant to the current task.
 - Reference files using absolute links (e.g., `file:///...`) or relative paths instead of full-text duplication.
+
+# Auxiliary Tooling (辅助工具)
+
+- **Script Location**: `C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py`
+- **Core Purpose**: Enforce token-efficient Preview-First scans, prune high-noise build/vendor artifacts, and automatically discover SSOT manifests and configuration baselines.
+
+### Commands
+
+1. **Standard Workspace Tree Preview (Default Depth 3, auto-prune noise)**:
+```powershell
+python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir]
+```
+
+2. **Custom Depth & Truncation Budget (Strict Token Protection)**:
+```powershell
+python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir] -d 2 -m 15 -t 100
+```
+
+3. **Summary & Key SSOT Assets Only**:
+```powershell
+python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir] --summary-only
+```
+
+4. **Structured JSON Output (Programmatic Parsing)**:
+```powershell
+python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir] --json
+```
 # Output Format
 ## Context Summary
 ### Existing Assets

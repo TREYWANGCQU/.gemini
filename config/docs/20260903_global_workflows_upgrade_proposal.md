@@ -1,4 +1,4 @@
-<!-- config/global_workflows/doc/20260903_global_workflows_upgrade_proposal.md -->
+<!-- config/docs/20260903_global_workflows_upgrade_proposal.md -->
 # 全局工作流架构增强方案：版本锚定、分层防御与熔断协议
 
 - **文档状态**：PROPOSAL / BASELINE ARCHITECTURE
