@@ -6,7 +6,6 @@ import re
 import json
 import argparse
 import subprocess
-import tempfile
 import zipfile
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -40,7 +39,8 @@ def clean_template_numpr(template_path: Path):
         tree = ET.fromstring(styles_xml)
         ns = {'w': NAMESPACES['w']}
         modified = False
-        for sid in ['Heading1', 'Heading2', 'Heading3', 'Heading4', 'heading 1', 'heading 2', 'heading 3', 'heading 4']:
+        target_sids = ['Heading1', 'Heading2', 'Heading3', 'Heading4', 'heading 1', 'heading 2', 'heading 3', 'heading 4', '1', '2', '3', '4']
+        for sid in target_sids:
             for s in tree.findall(f'.//w:style[@w:styleId="{sid}"]', ns):
                 pPr = s.find('.//w:pPr', ns)
                 if pPr is not None:
@@ -59,18 +59,61 @@ def clean_template_numpr(template_path: Path):
     except Exception:
         pass
 
-def extract_balanced_brackets(text: str, start_idx: int) -> tuple[str, int]:
+def extract_balanced_brackets(text: str, start_idx: int, open_char: str = '[', close_char: str = ']') -> tuple[str, int]:
     depth = 1
     idx = start_idx + 1
     while idx < len(text) and depth > 0:
-        if text[idx] == '[':
+        if text[idx] == open_char:
             depth += 1
-        elif text[idx] == ']':
+        elif text[idx] == close_char:
             depth -= 1
         idx += 1
     if depth == 0:
         return text[start_idx + 1 : idx - 1], idx
     return "", -1
+
+def extract_conf_metadata(typst_code: str) -> dict:
+    meta = {}
+    m = re.search(r'#show:\s*doc\s*=>\s*conf\s*\(', typst_code)
+    if not m:
+        return meta
+    start_paren = m.end() - 1
+    conf_body, _ = extract_balanced_brackets(typst_code, start_paren, open_char='(', close_char=')')
+    if not conf_body:
+        return meta
+        
+    tm = re.search(r'title:\s*["\']([^"\']+)["\']', conf_body)
+    if tm:
+        meta['title'] = tm.group(1).strip()
+        
+    stm = re.search(r'subtitle:\s*["\']([^"\']+)["\']', conf_body)
+    if stm:
+        meta['subtitle'] = stm.group(1).strip()
+        
+    authors = []
+    for am in re.finditer(r'name:\s*["\']([^"\']+)["\'](?:\s*,\s*affiliation:\s*["\']([^"\']+)["\'])?', conf_body):
+        name = am.group(1).strip()
+        affil = am.group(2).strip() if am.group(2) else ""
+        if affil:
+            authors.append(f"{name}（{affil}）")
+        else:
+            authors.append(name)
+    if authors:
+        meta['authors'] = "，".join(authors)
+        
+    ab_m = re.search(r'abstract:\s*\[', conf_body)
+    if ab_m:
+        ab_inner, _ = extract_balanced_brackets(conf_body, ab_m.end() - 1, open_char='[', close_char=']')
+        if ab_inner:
+            meta['abstract'] = ab_inner.strip()
+            
+    kw_m = re.search(r'keywords:\s*\(([\s\S]*?)\)', conf_body)
+    if kw_m:
+        kws = [k.strip().strip('"\'') for k in kw_m.group(1).split(',') if k.strip().strip('"\'')]
+        if kws:
+            meta['keywords'] = "；".join(kws)
+            
+    return meta
 
 def replace_align_blocks(code: str) -> str:
     pattern = re.compile(r'#align\s*\(\s*(center|left|right)\s*\)\s*\[')
@@ -109,10 +152,21 @@ def replace_align_blocks(code: str) -> str:
             break
     return code
 
-def preprocess_typst_content(typst_code: str) -> str:
+def preprocess_typst_content(typst_code: str, is_paper_mode: bool = False) -> str:
+    # 0. 提取学术/方案元数据 (conf)
+    meta = extract_conf_metadata(typst_code)
+    
     # 1. 移除全局配置与宏
     code = re.sub(r'#import\s+[^:\n]+(?::[^\n]*)?', '', typst_code)
-    code = re.sub(r'#show:\s*doc\s*=>\s*conf\s*\([\s\S]*?\)', '', code)
+    
+    # 彻底清除 #show: doc => conf(...)
+    m_conf = re.search(r'#show:\s*doc\s*=>\s*conf\s*\(', code)
+    if m_conf:
+        start_paren = m_conf.end() - 1
+        _, end_idx = extract_balanced_brackets(code, start_paren, open_char='(', close_char=')')
+        if end_idx != -1:
+            code = code[:m_conf.start()] + code[end_idx:]
+            
     code = re.sub(r'#show\s+[^:\n]+:\s*set\s+[^\n]+', '', code)
     code = re.sub(r'#show\s+[^:\n]+:\s*flush-left-list', '', code)
     code = re.sub(r'#set\s+page\s*\([\s\S]*?\)', '', code)
@@ -120,6 +174,7 @@ def preprocess_typst_content(typst_code: str) -> str:
     code = re.sub(r'#set\s+par\s*\([\s\S]*?\)', '', code)
     
     # 2. 清理局部控制宏
+    code = re.sub(r'#indent\b', '', code)
     code = re.sub(r'#no-indent\b', '', code)
     code = re.sub(r'#h\([^)]*\)', '', code)
     code = re.sub(r'#v\([^)]*\)', '', code)
@@ -154,16 +209,40 @@ def preprocess_typst_content(typst_code: str) -> str:
                 continue
         code = code[:start_pos] + (code[line_end:] if line_end != -1 else '')
     
-    # 5. 提取并安全标记 #align(...)
+    # 5. 替换三线表宏并修复 table.header
+    code = re.sub(r'\bthree-line-table\b', 'table', code)
+    code = re.sub(r'\bheader:\s*table\.header\b', 'table.header', code)
+    
+    # 6. 提取并安全标记 #align(...)
     code = replace_align_blocks(code)
     
-    # 6. 解包剩余 #text(...)
+    # 7. 解包剩余 #text(...)
     while re.search(r'#text\([^)]*\)\[([\s\S]*?)\]', code):
         code = re.sub(r'#text\([^)]*\)\[([\s\S]*?)\]', r'\1', code)
+        
+    # 8. 模式判定：若存在 conf 元数据或正文中存在多个一级章节标题，自动激活学术方案模式
+    h1_in_raw = len(re.findall(r'^=\s+(.*)$', code, re.MULTILINE))
+    has_conf_meta = bool(meta.get('title'))
+    if has_conf_meta or h1_in_raw > 1:
+        is_paper_mode = True
         
     lines = code.splitlines()
     clean_lines = []
     
+    # 注入文档元信息 (Title, Subtitle, Authors, Abstract, Keywords)
+    if is_paper_mode and has_conf_meta:
+        if meta.get('title'):
+            clean_lines.append(f"\n[[[DOCUMENTTITLE]]] {meta['title']} [[[ENDDOCUMENTTITLE]]]\n")
+        if meta.get('subtitle'):
+            clean_lines.append(f"\n[[[DOCUMENTSUBTITLE]]] {meta['subtitle']} [[[ENDDOCUMENTSUBTITLE]]]\n")
+        if meta.get('authors'):
+            clean_lines.append(f"\n[[[DOCUMENTAUTHOR]]] {meta['authors']} [[[ENDDOCUMENTAUTHOR]]]\n")
+        if meta.get('abstract'):
+            clean_lines.append(f"\n[[[DOCUMENTABSTRACT]]] **【摘要】** {meta['abstract']} [[[ENDDOCUMENTABSTRACT]]]\n")
+        if meta.get('keywords'):
+            clean_lines.append(f"\n[[[DOCUMENTKEYWORDS]]] **【关键词】** {meta['keywords']} [[[ENDDOCUMENTKEYWORDS]]]\n")
+            
+    h1_cnt = 0
     h2_cnt = 0
     h3_cnt = 0
     h4_cnt = 0
@@ -179,178 +258,150 @@ def preprocess_typst_content(typst_code: str) -> str:
         if stripped.startswith('#') and not any(stripped.startswith(prefix) for prefix in ['#table', '#figure', '#image', '#grid', '#rect', '#box', '#list', '#enum', '#link']):
             continue
             
-        # 智能匹配 Typst 标题并对齐 GBK 序号与 Word 样式层级
-        # Level 1: = 标题 -> Word [标题] (Title)
-        # Level 2: == 二级标题 -> Word [一级标题] (Heading 1)
-        # Level 3: === 三级标题 -> Word [二级标题] (Heading 2)
-        # Level 4: ==== 四级标题 -> Word [三级标题] (Heading 3)
-        # Level 5: ===== 五级标题 -> Word [四级标题] (Heading 4)
         h_match = re.match(r'^(={1,5})\s+(.*)$', stripped)
         if h_match:
             eqs, title_body = h_match.groups()
             level = len(eqs)
             title_text = title_body.strip()
             
-            if level == 1:
-                clean_lines.append(f"\n[[[DOCUMENTTITLE]]] {title_text} [[[ENDDOCUMENTTITLE]]]\n")
-            elif level == 2:
-                h2_cnt += 1
-                h3_cnt = 0
-                h4_cnt = 0
-                h5_cnt = 0
-                if not re.match(r'^[一二三四五六七八九十百]+[、\.\s]|第[一二三四五六七八九十]+[章节条]', title_text):
-                    prefix = f"{to_chinese_num(h2_cnt)}、"
+            # 检查标题是否自带序号或阶段前缀
+            has_existing_number = bool(re.match(
+                r'^(?:[一二三四五六七八九十百]+[、\.\s]|第[一二三四五六七八九十\d]+[步章节条周期次阶段]|机制[一二三四五六七八九十\d]+|Q\d+|[（(][\d一二三四五六七八九十]+[)）]|\d+(?:\.\d+)*[\s\.\、])',
+                title_text
+            ))
+            
+            if is_paper_mode:
+                # 学术方案模式：保持标准 1, 1.1, 1.1.1 层次
+                if level == 1:
+                    h1_cnt += 1
+                    h2_cnt = 0
+                    h3_cnt = 0
+                    h4_cnt = 0
+                    h5_cnt = 0
+                    prefix = f"{h1_cnt} " if not has_existing_number else ""
                     clean_lines.append(f"= {prefix}{title_text}")
-                else:
-                    clean_lines.append(f"= {title_text}")
-            elif level == 3:
-                h3_cnt += 1
-                h4_cnt = 0
-                h5_cnt = 0
-                if not re.match(r'^[（(][一二三四五六七八九十百]+[)）]', title_text):
-                    prefix = f"（{to_chinese_num(h3_cnt)}）"
+                elif level == 2:
+                    h2_cnt += 1
+                    h3_cnt = 0
+                    h4_cnt = 0
+                    h5_cnt = 0
+                    prefix = f"{h1_cnt}.{h2_cnt} " if not has_existing_number else ""
                     clean_lines.append(f"== {prefix}{title_text}")
-                else:
-                    clean_lines.append(f"== {title_text}")
-            elif level == 4:
-                h4_cnt += 1
-                h5_cnt = 0
-                if not re.match(r'^\d+[\.\、\s]', title_text):
-                    prefix = f"{h4_cnt}. "
+                elif level == 3:
+                    h3_cnt += 1
+                    h4_cnt = 0
+                    h5_cnt = 0
+                    prefix = f"{h1_cnt}.{h2_cnt}.{h3_cnt} " if not has_existing_number else ""
                     clean_lines.append(f"=== {prefix}{title_text}")
-                else:
-                    clean_lines.append(f"=== {title_text}")
-            elif level == 5:
-                h5_cnt += 1
-                if not re.match(r'^[（(]\d+[)）]', title_text):
-                    prefix = f"（{h5_cnt}）"
+                elif level == 4:
+                    h4_cnt += 1
+                    h5_cnt = 0
+                    prefix = f"{h1_cnt}.{h2_cnt}.{h3_cnt}.{h4_cnt} " if not has_existing_number else ""
                     clean_lines.append(f"==== {prefix}{title_text}")
-                else:
-                    clean_lines.append(f"==== {title_text}")
+                elif level == 5:
+                    h5_cnt += 1
+                    clean_lines.append(f"===== {title_text}")
+            else:
+                # 传统公文红头模式：首个 = 映射为标题，== 映射为 一、
+                if level == 1 and h1_cnt == 0 and not has_conf_meta:
+                    h1_cnt += 1
+                    clean_lines.append(f"\n[[[DOCUMENTTITLE]]] {title_text} [[[ENDDOCUMENTTITLE]]]\n")
+                elif level == 2 or (level == 1 and h1_cnt > 0):
+                    h2_cnt += 1
+                    h3_cnt = 0
+                    h4_cnt = 0
+                    h5_cnt = 0
+                    prefix = f"{to_chinese_num(h2_cnt)}、" if not has_existing_number else ""
+                    clean_lines.append(f"= {prefix}{title_text}")
+                elif level == 3:
+                    h3_cnt += 1
+                    h4_cnt = 0
+                    h5_cnt = 0
+                    prefix = f"（{to_chinese_num(h3_cnt)}）" if not has_existing_number else ""
+                    clean_lines.append(f"== {prefix}{title_text}")
+                elif level == 4:
+                    h4_cnt += 1
+                    h5_cnt = 0
+                    prefix = f"{h4_cnt}. " if not has_existing_number else ""
+                    clean_lines.append(f"=== {prefix}{title_text}")
+                elif level == 5:
+                    h5_cnt += 1
+                    prefix = f"（{h5_cnt}）" if not has_existing_number else ""
+                    clean_lines.append(f"==== {prefix}{title_text}")
         else:
             clean_lines.append(line)
             
     return "\n".join(clean_lines) + "\n\n"
 
 def postprocess_docx_xml(docx_path: Path):
-    """后处理 DOCX 内部 XML：注入 Word [标题] 与居中/副标题/作者格式，清洗占位符"""
+    """后处理 DOCX 内部 XML：注入 Word [标题] 与居中/副标题/作者格式，清洗占位符并规范段落排版"""
     with zipfile.ZipFile(docx_path, 'r') as zin:
         all_files = {item.filename: zin.read(item.filename) for item in zin.infolist()}
         
     doc_xml = all_files.get("word/document.xml")
+    styles_xml = all_files.get("word/styles.xml")
     if not doc_xml:
         return
         
-    tree = ET.fromstring(doc_xml)
     ns = {'w': NAMESPACES['w']}
+    
+    # 动态解析样式表中的 styleId 映射
+    style_map = {}
+    if styles_xml:
+        stree = ET.fromstring(styles_xml)
+        for s in stree.findall('.//w:style', ns):
+            sid = s.attrib.get(f'{{{ns["w"]}}}styleId')
+            name_elem = s.find('.//w:name', ns)
+            name = name_elem.attrib.get(f'{{{ns["w"]}}}val', '').lower() if name_elem is not None else ''
+            if sid:
+                style_map[name] = sid
+                style_map[sid.lower()] = sid
+                
+    title_sid = style_map.get('title', 'Title')
+    subtitle_sid = style_map.get('subtitle', 'Subtitle')
+    author_sid = style_map.get('author', 'Author')
+    abstract_sid = style_map.get('abstract', style_map.get('body text', 'Normal'))
+    
+    tree = ET.fromstring(doc_xml)
     w_pPr = f"{{{ns['w']}}}pPr"
     w_pStyle = f"{{{ns['w']}}}pStyle"
     w_rPr = f"{{{ns['w']}}}rPr"
-    w_rFonts = f"{{{ns['w']}}}rFonts"
-    w_sz = f"{{{ns['w']}}}sz"
-    w_szCs = f"{{{ns['w']}}}szCs"
     w_jc = f"{{{ns['w']}}}jc"
     w_ind = f"{{{ns['w']}}}ind"
     w_val = f"{{{ns['w']}}}val"
-    w_eastAsia = f"{{{ns['w']}}}eastAsia"
-    w_ascii = f"{{{ns['w']}}}ascii"
-    w_hAnsi = f"{{{ns['w']}}}hAnsi"
-    w_cs = f"{{{ns['w']}}}cs"
     
     font_map = {
-        "KaiTi": "方正楷体_GBK",
-        "HeiTi": "方正黑体_GBK",
-        "FangSong": "方正仿宋_GBK",
+        "KaiTi": "楷体",
+        "HeiTi": "黑体",
+        "FangSong": "仿宋",
         "XiaoBiaoSong": "方正小标宋_GBK",
     }
     
     modified = False
     
+    # 排除首行缩进的样式集合
+    excluded_indent_styles = {
+        "title", "subtitle", "author", "heading 1", "heading 2", "heading 3", "heading 4",
+        "1", "2", "3", "4", "caption", "tablecaption", "imagecaption", "sourcecode",
+        "table", "normal table", "captionedfigure", title_sid.lower(), subtitle_sid.lower(),
+        author_sid.lower()
+    }
+    
     for p in tree.findall('.//w:p', ns):
         runs = p.findall('.//w:r', ns)
         p_text = "".join("".join(t.text for t in r.findall('.//w:t', ns) if t.text) for r in runs)
         
-        # 1. 主标题映射为 Word [标题] (Title 样式)
+        # 1. 标题 (Title)
         if "DOCUMENTTITLE" in p_text:
             modified = True
-            cleaned_title = re.sub(r'\[+DOCUMENTTITLE\]+', '', p_text)
-            cleaned_title = re.sub(r'\[+ENDDOCUMENTTITLE\]+', '', cleaned_title).strip()
-            
-            # Put cleaned text in first run and clear others
-            first = True
-            for r in runs:
-                for t in r.findall('.//w:t', ns):
-                    if first:
-                        t.text = cleaned_title
-                        first = False
-                    else:
-                        t.text = ""
-            
-            pPr = p.find('.//w:pPr', ns)
-            if pPr is None:
-                pPr = ET.Element(w_pPr)
-                p.insert(0, pPr)
-            pStyle = pPr.find('.//w:pStyle', ns)
-            if pStyle is None:
-                pStyle = ET.Element(w_pStyle)
-                pPr.insert(0, pStyle)
-            pStyle.attrib[w_val] = "Title"
-            
-            jc = pPr.find('.//w:jc', ns)
-            if jc is None:
-                jc = ET.Element(w_jc)
-                pPr.append(jc)
-            jc.attrib[w_val] = "center"
-            
-            ind = pPr.find('.//w:ind', ns)
-            if ind is not None:
-                pPr.remove(ind)
-            new_ind = ET.Element(w_ind)
-            new_ind.attrib[f"{{{ns['w']}}}firstLine"] = "0"
-            new_ind.attrib[f"{{{ns['w']}}}firstLineChars"] = "0"
-            pPr.append(new_ind)
-            
-            for r in runs:
-                rPr = r.find('.//w:rPr', ns)
-                if rPr is None:
-                    rPr = ET.Element(w_rPr)
-                    r.insert(0, rPr)
-                rFonts = rPr.find('.//w:rFonts', ns)
-                if rFonts is None:
-                    rFonts = ET.Element(w_rFonts)
-                    rPr.insert(0, rFonts)
-                rFonts.attrib[w_eastAsia] = "方正小标宋_GBK"
-                rFonts.attrib[w_ascii] = "Times New Roman"
-                rFonts.attrib[w_hAnsi] = "Times New Roman"
-                rFonts.attrib[w_cs] = "Times New Roman"
-                
-                sz = rPr.find('.//w:sz', ns)
-                if sz is None:
-                    sz = ET.Element(w_sz)
-                    rPr.append(sz)
-                sz.attrib[w_val] = "44"
-                szCs = rPr.find('.//w:szCs', ns)
-                if szCs is None:
-                    szCs = ET.Element(w_szCs)
-                    rPr.append(szCs)
-                szCs.attrib[w_val] = "44"
-
-        # 2. 对齐段落 / 居中 / 靠右 / 副标题 / 署名
-        align_match = re.search(r'\[+ALIGN(CENTER|RIGHT|LEFT):([A-Za-z0-9]+)\]+', p_text)
-        if align_match:
-            modified = True
-            align_dir = align_match.group(1).lower()
-            font_tag = align_match.group(2)
-            font_name = font_map.get(font_tag, "方正仿宋_GBK" if align_dir == "right" else "方正楷体_GBK")
-            
-            cleaned_body = re.sub(r'\[+ALIGN(CENTER|RIGHT|LEFT):[A-Za-z0-9]+\]+', '', p_text)
-            cleaned_body = re.sub(r'\[+ENDALIGN(CENTER|RIGHT|LEFT)\]+', '', cleaned_body).strip()
+            cleaned = re.sub(r'\[+DOCUMENTTITLE\]+', '', p_text)
+            cleaned = re.sub(r'\[+ENDDOCUMENTTITLE\]+', '', cleaned).strip()
             
             first = True
             for r in runs:
                 for t in r.findall('.//w:t', ns):
                     if first:
-                        t.text = cleaned_body
+                        t.text = cleaned
                         first = False
                     else:
                         t.text = ""
@@ -363,57 +414,155 @@ def postprocess_docx_xml(docx_path: Path):
             if pStyle is None:
                 pStyle = ET.Element(w_pStyle)
                 pPr.insert(0, pStyle)
-            pStyle.attrib[w_val] = "Subtitle" if align_dir == "center" else "Normal"
+            pStyle.attrib[w_val] = title_sid
             
             jc = pPr.find('.//w:jc', ns)
             if jc is None:
                 jc = ET.Element(w_jc)
                 pPr.append(jc)
-            jc.attrib[w_val] = align_dir
+            jc.attrib[w_val] = "center"
             
             ind = pPr.find('.//w:ind', ns)
             if ind is not None:
                 pPr.remove(ind)
-            new_ind = ET.Element(w_ind)
-            new_ind.attrib[f"{{{ns['w']}}}firstLine"] = "0"
-            new_ind.attrib[f"{{{ns['w']}}}firstLineChars"] = "0"
-            pPr.append(new_ind)
+            continue
             
+        # 2. 副标题 (Subtitle)
+        if "DOCUMENTSUBTITLE" in p_text:
+            modified = True
+            cleaned = re.sub(r'\[+DOCUMENTSUBTITLE\]+', '', p_text)
+            cleaned = re.sub(r'\[+ENDDOCUMENTSUBTITLE\]+', '', cleaned).strip()
+            first = True
             for r in runs:
-                rPr = r.find('.//w:rPr', ns)
-                if rPr is None:
-                    rPr = ET.Element(w_rPr)
-                    r.insert(0, rPr)
-                rFonts = rPr.find('.//w:rFonts', ns)
-                if rFonts is None:
-                    rFonts = ET.Element(w_rFonts)
-                    rPr.insert(0, rFonts)
-                rFonts.attrib[w_eastAsia] = font_name
-                rFonts.attrib[w_ascii] = "Times New Roman"
-                rFonts.attrib[w_hAnsi] = "Times New Roman"
-                rFonts.attrib[w_cs] = "Times New Roman"
-                
-                sz = rPr.find('.//w:sz', ns)
-                if sz is None:
-                    sz = ET.Element(w_sz)
-                    rPr.append(sz)
-                sz.attrib[w_val] = "32"
-                
-                szCs = rPr.find('.//w:szCs', ns)
-                if szCs is None:
-                    szCs = ET.Element(w_szCs)
-                    rPr.append(szCs)
-                szCs.attrib[w_val] = "32"
+                for t in r.findall('.//w:t', ns):
+                    if first:
+                        t.text = cleaned
+                        first = False
+                    else:
+                        t.text = ""
+            pPr = p.find('.//w:pPr', ns)
+            if pPr is None:
+                pPr = ET.Element(w_pPr)
+                p.insert(0, pPr)
+            pStyle = pPr.find('.//w:pStyle', ns)
+            if pStyle is None:
+                pStyle = ET.Element(w_pStyle)
+                pPr.insert(0, pStyle)
+            pStyle.attrib[w_val] = subtitle_sid
+            jc = pPr.find('.//w:jc', ns)
+            if jc is None:
+                jc = ET.Element(w_jc)
+                pPr.append(jc)
+            jc.attrib[w_val] = "center"
+            ind = pPr.find('.//w:ind', ns)
+            if ind is not None:
+                pPr.remove(ind)
+            continue
 
-        # 3. 正文首行缩进 2 字符 (针对非标题、非编号列表、非署名对齐的正文段落)
+        # 3. 署名作者 (Author)
+        if "DOCUMENTAUTHOR" in p_text:
+            modified = True
+            cleaned = re.sub(r'\[+DOCUMENTAUTHOR\]+', '', p_text)
+            cleaned = re.sub(r'\[+ENDDOCUMENTAUTHOR\]+', '', cleaned).strip()
+            first = True
+            for r in runs:
+                for t in r.findall('.//w:t', ns):
+                    if first:
+                        t.text = cleaned
+                        first = False
+                    else:
+                        t.text = ""
+            pPr = p.find('.//w:pPr', ns)
+            if pPr is None:
+                pPr = ET.Element(w_pPr)
+                p.insert(0, pPr)
+            pStyle = pPr.find('.//w:pStyle', ns)
+            if pStyle is None:
+                pStyle = ET.Element(w_pStyle)
+                pPr.insert(0, pStyle)
+            pStyle.attrib[w_val] = author_sid
+            jc = pPr.find('.//w:jc', ns)
+            if jc is None:
+                jc = ET.Element(w_jc)
+                pPr.append(jc)
+            jc.attrib[w_val] = "center"
+            ind = pPr.find('.//w:ind', ns)
+            if ind is not None:
+                pPr.remove(ind)
+            continue
+
+        # 4. 摘要与关键词 (Abstract / Keywords)
+        if "DOCUMENTABSTRACT" in p_text or "DOCUMENTKEYWORDS" in p_text:
+            modified = True
+            cleaned = re.sub(r'\[+DOCUMENT(ABSTRACT|KEYWORDS)\]+', '', p_text)
+            cleaned = re.sub(r'\[+ENDDOCUMENT(ABSTRACT|KEYWORDS)\]+', '', cleaned).strip()
+            first = True
+            for r in runs:
+                for t in r.findall('.//w:t', ns):
+                    if first:
+                        t.text = cleaned
+                        first = False
+                    else:
+                        t.text = ""
+            pPr = p.find('.//w:pPr', ns)
+            if pPr is None:
+                pPr = ET.Element(w_pPr)
+                p.insert(0, pPr)
+            pStyle = pPr.find('.//w:pStyle', ns)
+            if pStyle is None:
+                pStyle = ET.Element(w_pStyle)
+                pPr.insert(0, pStyle)
+            pStyle.attrib[w_val] = abstract_sid
+            ind = pPr.find('.//w:ind', ns)
+            if ind is None:
+                ind = ET.Element(w_ind)
+                ind.attrib[f"{{{ns['w']}}}firstLineChars"] = "200"
+                ind.attrib[f"{{{ns['w']}}}firstLine"] = "480"
+                pPr.append(ind)
+            continue
+
+        # 5. 自定义 ALIGN 标签
+        align_match = re.search(r'\[+ALIGN(CENTER|RIGHT|LEFT):([A-Za-z0-9]+)\]+', p_text)
+        if align_match:
+            modified = True
+            align_dir = align_match.group(1).lower()
+            cleaned_body = re.sub(r'\[+ALIGN(CENTER|RIGHT|LEFT):[A-Za-z0-9]+\]+', '', p_text)
+            cleaned_body = re.sub(r'\[+ENDALIGN(CENTER|RIGHT|LEFT)\]+', '', cleaned_body).strip()
+            
+            first = True
+            for r in runs:
+                for t in r.findall('.//w:t', ns):
+                    if first:
+                        t.text = cleaned_body
+                        first = False
+                    else:
+                        t.text = ""
+            pPr = p.find('.//w:pPr', ns)
+            if pPr is None:
+                pPr = ET.Element(w_pPr)
+                p.insert(0, pPr)
+            pStyle = pPr.find('.//w:pStyle', ns)
+            if pStyle is None:
+                pStyle = ET.Element(w_pStyle)
+                pPr.insert(0, pStyle)
+            pStyle.attrib[w_val] = subtitle_sid if align_dir == "center" else "Normal"
+            jc = pPr.find('.//w:jc', ns)
+            if jc is None:
+                jc = ET.Element(w_jc)
+                pPr.append(jc)
+            jc.attrib[w_val] = align_dir
+            ind = pPr.find('.//w:ind', ns)
+            if ind is not None:
+                pPr.remove(ind)
+            continue
+
+        # 6. 正文段落缩进 (2 字符)
         p_style_elem = p.find('.//w:pStyle', ns)
-        p_style_val = p_style_elem.attrib.get(w_val) if p_style_elem is not None else None
+        p_style_val = (p_style_elem.attrib.get(w_val) if p_style_elem is not None else '').lower()
         has_num = p.find('.//w:numPr', ns) is not None
-        is_title_or_align = "DOCUMENTTITLE" in p_text or align_match
-        is_heading_style = p_style_val in {"Title", "Heading1", "Heading2", "Heading3", "Heading4", "heading 1", "heading 2", "heading 3", "heading 4", "1", "2", "3", "4"}
         
-        if not has_num and not is_title_or_align and not is_heading_style:
-            if p_style_val in ['BodyText', 'FirstParagraph', 'Normal', 'a', None]:
+        if not has_num and p_style_val not in excluded_indent_styles:
+            if p_style_val in ['bodytext', 'firstparagraph', 'normal', 'a', 'a0', '']:
                 pPr = p.find('.//w:pPr', ns)
                 if pPr is None:
                     pPr = ET.Element(w_pPr)
@@ -422,15 +571,15 @@ def postprocess_docx_xml(docx_path: Path):
                 if ind is None:
                     ind = ET.Element(w_ind)
                     ind.attrib[f"{{{ns['w']}}}firstLineChars"] = "200"
-                    ind.attrib[f"{{{ns['w']}}}firstLine"] = "640"
+                    ind.attrib[f"{{{ns['w']}}}firstLine"] = "480"
                     pPr.append(ind)
                     modified = True
                 elif not ind.attrib.get(f"{{{ns['w']}}}firstLineChars") and not ind.attrib.get(f"{{{ns['w']}}}firstLine"):
                     ind.attrib[f"{{{ns['w']}}}firstLineChars"] = "200"
-                    ind.attrib[f"{{{ns['w']}}}firstLine"] = "640"
+                    ind.attrib[f"{{{ns['w']}}}firstLine"] = "480"
                     modified = True
 
-    # 4. 高亮与着色所有 【待补充：...】 标记
+    # 7. 高亮与着色所有 【待补充：...】 标记
     for p in tree.findall('.//w:p', ns):
         runs_list = list(p.findall('.//w:r', ns))
         for r in runs_list:
@@ -450,12 +599,10 @@ def postprocess_docx_xml(docx_path: Path):
                 new_r = ET.Element(f"{{{ns['w']}}}r")
                 new_rPr = ET.Element(w_rPr)
                 new_r.append(new_rPr)
-                
                 rPr_orig = r.find('.//w:rPr', ns)
                 if rPr_orig is not None:
                     for child in rPr_orig:
                         new_rPr.append(ET.fromstring(ET.tostring(child)))
-                        
                 if part.startswith('【待补充：') and part.endswith('】'):
                     if new_rPr.find('.//w:b', ns) is None:
                         new_rPr.append(ET.Element(f"{{{ns['w']}}}b"))
@@ -471,7 +618,6 @@ def postprocess_docx_xml(docx_path: Path):
                     shd.attrib[w_val] = "clear"
                     shd.attrib[f"{{{ns['w']}}}color"] = "auto"
                     shd.attrib[f"{{{ns['w']}}}fill"] = "FEE2E2"
-                    
                 new_t = ET.Element(f"{{{ns['w']}}}t")
                 new_t.attrib['{http://www.w3.org/XML/1998/namespace}space'] = 'preserve'
                 new_t.text = part
@@ -499,9 +645,6 @@ def run_publisher(input_path: Path, output_path: Path, template_path: Path = Non
             "output_files": []
         }
         
-    typ_content = input_path.read_text(encoding='utf-8')
-    cleaned_typ = preprocess_typst_content(typ_content)
-    
     ref_arg = []
     resolved_template = None
     if template_path:
@@ -521,25 +664,32 @@ def run_publisher(input_path: Path, output_path: Path, template_path: Path = Non
         elif Path("reference.docx").exists():
             resolved_template = Path("reference.docx")
 
+    is_paper_mode = False
     if resolved_template and resolved_template.exists():
+        tname = resolved_template.stem.lower()
+        if 'paper' in tname or 'report' in tname or 'academic' in tname:
+            is_paper_mode = True
         clean_template_numpr(resolved_template)
         ref_arg = [f"--reference-doc={resolved_template}"]
         diagnostics.append(f"Using template: {resolved_template}")
             
-    with tempfile.NamedTemporaryFile(suffix=".typ", delete=False, mode='w', encoding='utf-8') as tmp_typ:
-        tmp_typ.write(cleaned_typ)
-        tmp_typ_path = tmp_typ.name
+    typ_content = input_path.read_text(encoding='utf-8')
+    cleaned_typ = preprocess_typst_content(typ_content, is_paper_mode=is_paper_mode)
+    
+    # 为保证相对路径资产（如 assets/xxx.svg）被正确解析，临时文件生成在源码同级目录
+    tmp_typ_path = input_path.parent / f".tmp_{input_path.stem}.typ"
+    tmp_typ_path.write_text(cleaned_typ, encoding='utf-8')
         
     try:
         cmd = [
             "pandoc",
-            tmp_typ_path,
+            str(tmp_typ_path),
             "-f", "typst",
             "-t", "docx",
             "-o", str(output_path)
         ] + ref_arg
         
-        proc = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+        proc = subprocess.run(cmd, cwd=str(input_path.parent), capture_output=True, text=True, encoding='utf-8')
         if proc.returncode != 0:
             return {
                 "status": "FAIL",
@@ -555,7 +705,7 @@ def run_publisher(input_path: Path, output_path: Path, template_path: Path = Non
                 if "word/document.xml" in z.namelist():
                     doc_xml = z.read("word/document.xml")
                     tree = ET.fromstring(doc_xml)
-                    heading_style_ids = {"Title", "1", "2", "3", "4", "5", "6", "7", "8", "9", "heading 1", "heading 2", "heading 3", "heading 4", "Heading1", "Heading2", "Heading3", "Heading4"}
+                    heading_style_ids = {"Title", "1", "2", "3", "4", "5", "6", "7", "8", "9", "heading 1", "heading 2", "heading 3", "heading 4", "Heading1", "Heading2", "Heading3", "Heading4", "a5", "a7"}
                     if "word/styles.xml" in z.namelist():
                         styles_xml = z.read("word/styles.xml")
                         stree = ET.fromstring(styles_xml)
@@ -581,8 +731,8 @@ def run_publisher(input_path: Path, output_path: Path, template_path: Path = Non
             "output_files": [str(output_path)]
         }
     finally:
-        if os.path.exists(tmp_typ_path):
-            os.remove(tmp_typ_path)
+        if tmp_typ_path.exists():
+            tmp_typ_path.unlink()
 
 def main():
     parser = argparse.ArgumentParser(description="Typst to Word High-Fidelity Publisher")
