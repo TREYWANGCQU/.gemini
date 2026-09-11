@@ -175,7 +175,7 @@ def preprocess_typst_content(typst_code: str, is_paper_mode: bool = False) -> st
     
     # 2. 清理局部控制宏
     code = re.sub(r'#indent\b', '', code)
-    code = re.sub(r'#no-indent\b', '', code)
+    code = re.sub(r'#no-indent\s*', '[[[NOINDENT]]] ', code)
     code = re.sub(r'#h\([^)]*\)', '', code)
     code = re.sub(r'#v\([^)]*\)', '', code)
     
@@ -556,6 +556,25 @@ def postprocess_docx_xml(docx_path: Path):
                 pPr.remove(ind)
             continue
 
+        # 5.5 自定义 NOINDENT 标签（主送机关或顶格段落）
+        if "NOINDENT" in p_text:
+            modified = True
+            cleaned_body = re.sub(r'\[+NOINDENT\]+', '', p_text).strip()
+            first = True
+            for r in runs:
+                for t in r.findall('.//w:t', ns):
+                    if first:
+                        t.text = cleaned_body
+                        first = False
+                    else:
+                        t.text = ""
+            pPr = p.find('.//w:pPr', ns)
+            if pPr is not None:
+                ind = pPr.find('.//w:ind', ns)
+                if ind is not None:
+                    pPr.remove(ind)
+            continue
+
         # 6. 正文段落缩进 (2 字符)
         p_style_elem = p.find('.//w:pStyle', ns)
         p_style_val = (p_style_elem.attrib.get(w_val) if p_style_elem is not None else '').lower()
@@ -625,6 +644,19 @@ def postprocess_docx_xml(docx_path: Path):
                 p.insert(r_idx + offset, new_r)
                 offset += 1
             modified = True
+
+    # 8. 映射规范表格样式（如三线表）
+    table_sid = style_map.get('三线表') or style_map.get('table grid') or style_map.get('ad')
+    if table_sid:
+        for tbl in tree.findall('.//w:tbl', ns):
+            tblPr = tbl.find('.//w:tblPr', ns)
+            if tblPr is not None:
+                tblStyle = tblPr.find('.//w:tblStyle', ns)
+                if tblStyle is not None:
+                    curr_val = tblStyle.attrib.get(w_val, '').lower()
+                    if curr_val in ['table', 'normal table', 'a1', '']:
+                        tblStyle.attrib[w_val] = table_sid
+                        modified = True
 
     if modified:
         all_files["word/document.xml"] = ET.tostring(tree, encoding='utf-8', xml_declaration=True)
