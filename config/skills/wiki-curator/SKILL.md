@@ -53,10 +53,82 @@ flowchart TD
 
 1. **GitHub Actions 持续部署工作流**：
    - 检查 `.github/workflows/wiki-sync.yml`；
-   - 若不存在，自动生成标准的 `wiki-sync.yml`（监听 `doc/wiki_staging/**` 并在 `ubuntu-latest` 容器内完成差异镜像同步与推送）。
+   - 若不存在，自动生成标准的 `wiki-sync.yml`。
+   > [!CAUTION]
+   > **关键避坑防线（防误删工作区根目录）**：
+   > 历史实战踩坑证实：在 Linux 环境下，`find wiki-repo -maxdepth 1` 会把 Depth 0（`wiki-repo` 目录自身）一并列出。若缺失 `-mindepth 1`，`rm -rf` 会直接将 `wiki-repo` 自身连同 `.git` 彻底销毁，导致紧随其后的 `cp` 报 `cp: target 'wiki-repo/': No such file or directory`。
+   > **因此必须严格遵循以下基准模板，包含 `-mindepth 1` 约束与点号目录镜像拷贝**：
+   ```yaml
+   name: "Sync GitHub Wiki"
+
+   on:
+     push:
+       branches:
+         - main
+         - master
+       paths:
+         - 'doc/wiki_staging/**'
+         - '.github/workflows/wiki-sync.yml'
+     workflow_dispatch:
+
+   concurrency:
+     group: wiki-sync
+     cancel-in-progress: false
+
+   permissions:
+     contents: write
+
+   jobs:
+     sync-wiki:
+       name: "Deploy Staging to GitHub Wiki"
+       runs-on: ubuntu-latest
+       steps:
+         - name: "Checkout Main Repository"
+           uses: actions/checkout@v4
+           with:
+             path: main-repo
+
+         - name: "Checkout Wiki Repository"
+           uses: actions/checkout@v4
+           with:
+             repository: ${{ github.repository }}.wiki
+             token: ${{ secrets.WIKI_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+             path: wiki-repo
+
+         - name: "Sync Staged Documents to Wiki"
+           run: |
+             echo "=== 正在同步 doc/wiki_staging 至 Wiki 工作区 ==="
+             # 必须带 -mindepth 1，严防误删 wiki-repo 根目录与 .git
+             find wiki-repo -mindepth 1 -maxdepth 1 -not -name '.git' -exec rm -rf {} +
+             cp -r main-repo/doc/wiki_staging/. wiki-repo/
+             ls -la wiki-repo/
+
+         - name: "Commit and Deploy Changes to Wiki"
+           working-directory: wiki-repo
+           run: |
+             git config user.name "github-actions[bot]"
+             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+             if [ -z "$(git status --porcelain)" ]; then
+               echo ">>> Wiki 没有任何变动，无需提交。"
+               exit 0
+             fi
+
+             echo ">>> 检测到 Wiki 内容变更，准备提交并推送..."
+             git add .
+             git commit -m "docs(wiki): automated sync from commit ${{ github.sha }}"
+             git push origin HEAD
+             echo "=== Wiki 持续发布已成功完成! ==="
+   ```
+
 2. **Git 换行符保护**：
    - 检查 `.gitattributes`；
-   - 确保包含 `doc/wiki_staging/*.md text eol=lf`，杜绝跨平台 CRLF 脏变动。
+   - 确保包含以下标准规约，杜绝跨平台 CRLF 脏变动：
+     ```gitattributes
+     doc/wiki_staging/*.md text eol=lf
+     *.sh text eol=lf
+     .github/**/*.yml text eol=lf
+     ```
 3. **本地构建与转码脚本**：
    - 检查 `scripts/build-wiki-staging.ps1`（或仓库已有构建脚本）；
    - 若不存在，基于当前仓库的 `$DocsRoot` 动态生成纯净的受控构建脚本，具备扁平命名映射、超链接绝对化与大纲自动渲染能力。
@@ -108,8 +180,8 @@ flowchart TD
    - 汇总本次更新的新增/修改页面清单；
    - 引导用户执行 Git 提交指令：
      ```bash
-     git add doc/wiki_staging/ .github/workflows/wiki-sync.yml
+     git add doc/wiki_staging/ .github/workflows/wiki-sync.yml .gitattributes
      git commit -m "docs(wiki): sync wiki staging"
-     git push origin master
+     git push origin HEAD
      ```
-   - 提示：Push 到 master 后，GitHub Actions 将在 30 秒内全自动完成 Wiki 网页端发布。
+   - 提示：Push 到远程主分支（`main` 或 `master`）后，GitHub Actions 将在约 30 秒内全自动完成 Wiki 网页端发布。
