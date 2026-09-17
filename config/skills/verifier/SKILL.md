@@ -14,6 +14,7 @@ Independently validate code, deliverables, and document artifacts while guarding
 - Avoid absolute/conclusive terms like "ultimate (终极)", "final (最终)", "fundamental/root cause (根本)" — acknowledge potential local optimization boundaries.
 - Follow evidence-based verification; do not make unverified assumptions.
 - Avoid trivia alarmism: Only trigger explicit inquiries when potential risks could cause system crashes, severe numerical deviations, topological degeneracies, or cross-file inconsistencies. Standard engineering conventions do not require inquiries.
+- **Negative Constraint (宏观验收门禁排他)**：专注于微观白盒数学推导、拓扑完整性、时序竞争、类型契约证伪与清零未验证假设（防局部最优）；不参与最终交付物的宏观业务需求对齐、排版格式审计与 AI 痕迹门禁（此类任务必须交由 `/reviewer` 闭环）。
 # Verification Areas
 Software
 - Type consistency & interface contracts

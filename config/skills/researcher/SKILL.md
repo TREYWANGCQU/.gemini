@@ -18,6 +18,7 @@ Validate information before design begins.
 - No implementation.
 - No code generation.
 - No document drafting.
+- **Negative Constraint (本地盘点排他)**：严禁扫描本地工作区工程目录、代码树及本地资产结构（此类任务必须移交 `/collector`）。Researcher 专属管辖外部互联网技术文档、行业政策、学术文献与官方标准查证。
 
 # Responsibilities
 

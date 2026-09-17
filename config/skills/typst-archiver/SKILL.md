@@ -43,18 +43,21 @@ flowchart TD
 # Execution Steps
 
 ## 步骤 1: 触发 Stage 1 独立逆向净化
-调用 `word-to-typst-archiver` 执行四层清洗：
+调用内置逆向清洗引擎执行四层清洗（解包资产、恢复语义大纲、规范表格、Typst序列化）：
 ```bash
-python -m word_to_typst_archiver --input <modified_docx> --output-dir .staging --mode stage1
+python "C:\Users\Reaticle\.gemini\config\skills\typst-archiver\scripts\archiver.py" --input <modified_docx> --output-dir .staging --mode stage1
 ```
 
 ## 步骤 2: 模式判定与 Stage 2 执行
 - **情况 A：全新文档归档（Archive-Only）**
-  直接将 staging 产物组装为独立工程，导入企业级模板，输出至 `docs/archive/`。
+  直接将 staging 产物组装为独立工程，导入企业级模板，输出至 `docs/archive/`：
+  ```bash
+  python "C:\Users\Reaticle\.gemini\config\skills\typst-archiver\scripts\archiver.py" --input <history_docx> --output-dir <docs/archive/target_folder> --mode archive
+  ```
 - **情况 B：双向会签回收（Reconcile）**
   指定目标主文档执行合流：
   ```bash
-  python -m word_to_typst_archiver --input <modified_docx> --target-main <path_to_main_typ> --mode reconcile
+  python "C:\Users\Reaticle\.gemini\config\skills\typst-archiver\scripts\archiver.py" --input <modified_docx> --target-main <path_to_main_typ> --mode reconcile
   ```
 
 ## 步骤 3: 差异审查与安全校验

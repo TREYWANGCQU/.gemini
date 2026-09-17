@@ -12,10 +12,13 @@ Collect all available facts before analysis begins, using a token-efficient prev
 # Constraints
 - No solution design.
 - No code generation.
-- No document drafting.
+- No document drafting (prose, architecture, or conclusion synthesis).
 - No architectural decisions.
+- **Negative Constraint (外部调研排他)**：严禁执行公网技术标准核查、学术论文检索与政策调研（此类任务必须移交 `/researcher`）。Collector 专属管辖本地工作区代码树与内源工程资产。
 - No raw full-text copy-pasting of large files (>50 lines, or >100 lines if highly cohesive and crucial). Use targeted snippets, key signatures, and links instead.
+
 # Responsibilities
+### Mode 1: 本地资产与上下文盘点 (Context Preview Mode - 默认只读)
 For software projects:
 - Scan codebase structure and map out file layouts first using `scripts/preview_tree.py` (limit search depth/paths to avoid scanning unrelated directories and blowing up token limits).
 - Extract high-level interfaces and type signatures (not implementation details).
@@ -25,6 +28,12 @@ For document projects:
 - Preview document outlines, tables of contents, or introductory summaries first.
 - Extract only user requirements, standards, and boundary conditions relevant to the current task.
 - Reference files using absolute links (e.g., `file:///...`) or relative paths instead of full-text duplication.
+
+### Mode 2: 受限事实同步与方案补遗 (Fact-Sync Mode)
+当调用者要求更新方案遗漏事实或执行增量事实同步时：
+- **受限写入范围 (Restricted Write Scope)**：仅限向目标文档已声明的 `### Verified Facts`、`### 基础事实与资产基准` 或 `<!-- FACTS_START --> ... <!-- FACTS_END -->` 锚点区内部追加/更新事实。若无显式锚点，在文件末尾以标准 Markdown 附录形式创建 `## 附录：已验证事实增量 (Verified Facts Delta)`。
+- **严禁越界行为**：严禁篡改方案中的“设计目标、技术架构、交互流程、验收指标”等逻辑推论段落。
+- **漂移预警 (Drift Alert)**：若发现新增事实推翻了方案现有章节的核心假定，**禁止自行修改正文**，必须输出警告：`> [!WARNING] FACT DRIFT DETECTED: 请触发 /analyzer 重新评估架构影响`。
 
 # Auxiliary Tooling (辅助工具)
 

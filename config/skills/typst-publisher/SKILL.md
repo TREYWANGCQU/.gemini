@@ -1,6 +1,6 @@
 ---
 name: typst-publisher
-description: 正向高保真编译与质检交付工作流：检查 Typst 源码、匹配 reference.docx 模板、调用 typst-docx-publisher 执行样式注水编译、运行大纲与表格质检门禁并生成交付基线。
+description: 正向高保真编译与质检交付工作流：检查 Typst 源码、匹配 reference.docx 模板、调度内置样式注水导出引擎执行编译、运行大纲与表格质检门禁并生成交付基线。
 ---
 
 # Typst Publisher
@@ -21,7 +21,7 @@ Typst-to-Word 高保真发布与质检调度专家。
 flowchart TD
     Start["发起 /typst-publisher"] --> Step1["步骤 1: 源码与元数据完整性检查"]
     Step1 --> Step2["步骤 2: 模板匹配与解析 (templates/ 目录)"]
-    Step2 --> Step3["步骤 3: 调度 typst-docx-publisher 执行高保真样式注水"]
+    Step2 --> Step3["步骤 3: 调度内置 publisher 引擎执行高保真样式注水"]
     Step3 --> Step4["步骤 4: 运行交付质检门禁 (大纲/表格/编号/字体)"]
     Step4 --> Step5["步骤 5: 交付产物打包与 Git Baseline 标记"]
     Step5 --> End["交付完成并输出质检报告"]
@@ -39,10 +39,10 @@ flowchart TD
 1. 依据文档类型匹配参考模板（优先级：项目指定 `--template` > 默认 `~/.gemini/config/templates/reference-gbk.docx`）。
 2. 若指定模板不存在，提示用户选择已有模板或通过 `/docx-template-sync` 从标杆文档逆向生成。
 
-## 步骤 3: 调度 `typst-docx-publisher`
+## 步骤 3: 调度内置样式注水引擎
 执行标准化 CLI 命令：
 ```bash
-python -m typst_docx_publisher --input <path_to_typ> --output <path_to_docx> --template <path_to_reference_docx>
+python "C:\Users\Reaticle\.gemini\config\skills\typst-publisher\scripts\publisher.py" --input <path_to_typ> --output <path_to_docx> --template <path_to_reference_docx>
 ```
 
 ## 步骤 4: 运行质量门禁审查 (Quality Gate)
