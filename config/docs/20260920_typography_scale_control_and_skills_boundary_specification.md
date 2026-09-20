@@ -228,7 +228,37 @@ graph LR
 
 ---
 
-### 6.3 完整端到端操作工作流与实操 SOP (Step-by-Step Workflow)
+### 6.3 矢量图形双轨调用形态与实操 SOP (Dual-Track Invocation & SOP)
+
+针对日常绘图与复杂项目工程化两类不同深度诉求，系统提供两种互补的调用形态：
+
+#### 6.3.1 矢量设计双轨调用形态矩阵 (Invocation Matrix)
+
+| 调用模式 | 触发入口 | 适用场景 | 执行机制 | 质检门禁调用方式 |
+| :--- | :--- | :--- | :--- | :--- |
+| **模式一：全局直接调用<br>(轻量/单图通用模式)** | `/svg-designer [绘图需求]` | 通用系统架构图、算法流程图、快速方案草图，**无需项目特化色板或专有设计资产** | 直接激活全局 `svg-designer`，依据标准离散字阶表与空间代偿三级推导算法就地生成目标 SVG | 直接运行全局内置质检脚本：<br>`python C:/Users/Reaticle/.gemini/config/skills/svg-designer/scripts/validate_svg.py output.svg` |
+| **模式二：局部技能托管<br>(项目工程化深度模式)** | `/.agents/skills/<project>-svg-generator` | 长期演进的业务系统（如智慧交通平台、数智建管系统），**要求强统一度量、企业专有色板与固定模版** | 由 `svg-skill-curator` 脚手架生成独立局部技能，注入项目特化 `design-tokens.yaml`，底层算法与门禁完全承继全局 `svg-designer` 基线 | 运行项目本地挂接脚本：<br>`python .agents/skills/<project>-svg-generator/scripts/validate.py output.svg`，支持版本漂移同步 |
+
+---
+
+#### 6.3.2 模式一：全局直接调用实操流 (Direct Workflow)
+
+在非工程化目录或单次独立绘图场景中，无需初始化局部技能，直接完成“指令绘图 $\to$ DOM 质检”两步闭环：
+1. **直接指令生成**：
+   ```text
+   /svg-designer 请绘制高并发数据流向拓扑图，严格保持 12px 底线与 16:9 画布比例
+   ```
+2. **自动化门禁拦截校验**：
+   ```bash
+   # 直接执行全局质检脚本验证产物
+   python C:/Users/Reaticle/.gemini/config/skills/svg-designer/scripts/validate_svg.py docs/dataflow.svg
+   ```
+
+---
+
+#### 6.3.3 模式二：项目工程化完整闭环 SOP (Lifecycle Workflow)
+
+当项目进入团队协同或需要沉淀专属设计变量时，启动全生命周期闭环流程：
 
 ```mermaid
 sequenceDiagram
@@ -263,7 +293,7 @@ sequenceDiagram
     end
 ```
 
-#### 步骤 1：新建独立项目局部 SVG 技能 (Project Initialization)
+##### 步骤 1：新建独立项目局部 SVG 技能 (Project Initialization)
 在全新业务项目（例如：新建智慧交通平台前端工程）中，若需要统一出图规范：
 1. 启动 `svg-skill-curator`：
    ```bash
@@ -280,14 +310,14 @@ sequenceDiagram
        └── validate.py          # 挂接全局 validate_svg.py 的本地调用入口
    ```
 
-#### 步骤 2：日常矢量图生成 (Vector Rendering)
+##### 步骤 2：日常矢量图生成 (Vector Rendering)
 在项目开发过程中，用户要求绘制架构图：
 1. 调度 `.agents/skills/traffic-arch-svg-generator`；
 2. 技能读取 `design-tokens.yaml` 中的色值与比例；
-3. 执行排版推导算法：遇到较长说明文字时，**坚决不缩字号**，主动精炼文本并拆解为 `<tspan x="..." dy="1.35em">` 多行文本（首行 `dy="0"` 或锚定基线，后续行以相对字阶行高 `dy="1.35em"` 递增），外层 `<rect>` 高度与顶层 `viewBox` 画布尺寸联动级联外扩；
+3. 底层调用 `svg-designer` 的排版推导算法：遇到较长说明文字时，**坚决不缩字号**，主动精炼文本并拆解为 `<tspan x="..." dy="1.35em">` 多行文本（首行 `dy="0"` 或锚定基线，后续行以相对字阶行高 `dy="1.35em"` 递增），外层 `<rect>` 高度与顶层 `viewBox` 画布尺寸联动级联外扩；
 4. 输出目标文件 `docs/architecture.svg`。
 
-#### 步骤 3：确定性质检门禁判定 (Deterministic Quality Gate)
+##### 步骤 3：确定性质检门禁判定 (Deterministic Quality Gate)
 生成器渲染完毕后，必须自动或手动调用确定性验证器：
 ```bash
 python .agents/skills/traffic-arch-svg-generator/scripts/validate.py docs/architecture.svg
@@ -298,12 +328,12 @@ python .agents/skills/traffic-arch-svg-generator/scripts/validate.py docs/archit
 - **门禁通过**（输出 `VALIDATION SUCCESS: All fonts >= 12px`）：
   - 流转至 `/reviewer` 进行宏观质量验收。
 
-#### 步骤 4：Reviewer 宏观门禁与范围防腐 (Review & Merge)
+##### 步骤 4：Reviewer 宏观门禁与范围防腐 (Review & Merge)
 1. `/reviewer` 读取外部验证器返回值 `PASS`；
 2. Reviewer 依据宏观准则校验技术栈一致性与 AI 痕迹；
 3. **特别约束**：若 Reviewer 发现微小排版不协调，**严禁自行在 Diff 中微调 `x`, `y` 坐标**，必须打回由生成器依据几何算法重新求解导出。
 
-#### 步骤 5：项目技能与全局基线同步 (Maintenance & Evolution)
+##### 步骤 5：项目技能与全局基线同步 (Maintenance & Evolution)
 当全局 `svg-designer` 更新了折行支持（例如增加对 emoji 或全角标点的字宽补偿算法）时：
 1. 调度 `svg-skill-curator`：
    ```bash
