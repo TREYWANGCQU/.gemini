@@ -67,3 +67,17 @@ Every generated code block representing a file or a patch must begin with a comm
 - Python/YAML/Typst/Shell: `# relative/path/file.py`
 - CSS/Less/SCSS: `/* relative/path/file.css */`
 - HTML/XML: `<!-- relative/path/file.html -->`
+
+## UI & Typography Readability Floor
+
+Apply the following hard constraints whenever generating CSS, HTML, SVG, Canvas, Three.js, or charting code (e.g., ECharts, D3):
+
+- **Hard Physiological Floor**: All rendered typography must strictly observe $\text{font-size} \ge 12\text{px}$ (or $\ge 0.75\text{rem}$ assuming standard $16\text{px}$ base).
+- **Prohibited Patterns**:
+  - Never hardcode $< 12\text{px}$ in CSS (`font-size: 9px`, `10px`, `11px`, `0.625rem`).
+  - Never hardcode $< 12$ in JavaScript/TypeScript chart configs (`fontSize: 9`, `axisLabel: { fontSize: 10 }`).
+  - Never use Canvas 2D font strings with $< 12\text{px}$ (`ctx.font = '10px sans-serif'`).
+  - Never use CSS `transform: scale(<1.0)` or `zoom` as a workaround to artificially shrink text below $12\text{px}$.
+- **Approved Spatial Compensation**:
+  - When labels collide or overflow, resolve congestion strictly via text condensation, rotation ($30^\circ / 45^\circ$), interval sampling (`interval: 'auto'`), or text truncation + Tooltip.
+- **Token First**: Always prefer CSS variables (`var(--text-xs)`, `var(--text-base)`) and chart constants (`CHART_TOKENS.fontSizeFloor`) over raw pixel magic numbers.
