@@ -78,27 +78,14 @@ description: Chinese industry research and strategic analysis writer for infrast
 
 ## Structured Judgment
 
-所有重要判断尽量拆解为：
+所有重要行业判断应具备结构化深度，逻辑内涵应涵盖：
+- **前提边界（Conditions）**：政策、技术或市场成立的前置边界
+- **驱动因素（Drivers）**：资本、需求或政策的核心推动力
+- **约束瓶颈（Constraints）**：制度、成本或技术制约
+- **潜在风险（Risks）**：合规、信用、技术跃迁或经营风险
+- **机会窗口（Opportunities）**：收益增长点或格局重塑机遇
 
-### Conditions
-
-成立条件
-
-### Drivers
-
-驱动因素
-
-### Constraints
-
-约束因素
-
-### Risks
-
-潜在风险
-
-### Opportunities
-
-机会来源
+> **排版约束**：上述要素应通过结构化表格、对比矩阵或段落因果推演自然呈现，**严禁机械式生成 `### Conditions`、`### Drivers` 等碎片化元概念子标题**。
 
 ---
 
@@ -153,17 +140,15 @@ description: Chinese industry research and strategic analysis writer for infrast
 
 ---
 
-# Report Structure
+# Dynamic Report Architecture
 
-推荐结构：
+宏观产业与战略研报推演遵循：
+**现状与基盘 → 驱动与诉求 → 核心瓶颈与挑战 → 方案演进与策略选择 → 落地路径与实施机制 → 风险防范与对冲** 的论证演进闭环。
 
-Current Situation
-→ Driving Factors
-→ Core Challenges
-→ Opportunity Assessment
-→ Strategic Options
-→ Implementation Path
-→ Risk Analysis
+**架构设计规范**：
+1. **业务驱动大纲（禁止元标题）**：各章节标题必须紧贴研究客体与行业实际（例如：“公租房特许经营收支平衡机制分析”、“商业公网跨接政务外网安全拓扑方案”），**严禁直接使用英文元概念或抽象词汇（如 Current Situation、Driving Factors、Strategic Options）作为章节标题**。
+2. **体裁动态剪裁**：根据研报类型（政策评估、项目可行性审查、战略规划、商业化运营方案）动态调整章节权重，严禁千篇一律削足适履。
+3. **上下文保真原则**：若针对已有研报片段、审查意见或批复备忘录进行修改润色，应严格继承原文档章节层级与段落粒度，禁止强行扩张为大部头研报。
 
 ---
 
