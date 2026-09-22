@@ -27,7 +27,8 @@
         "read_url(marxists.org)",
         "read_file(C:\\Users\\Reaticle\\config\\global_workflows)",
         "mcp(chrome_devtools/evaluate_script)",
-        "execute_url(192.168.254.16)"
+        "execute_url(192.168.254.16)",
+        "read_url(sing-box.sagernet.org)"
       ]
     },
     "remoteControlHostname": "desktop-7e09fko-zero-galaxy",

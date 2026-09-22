@@ -61,6 +61,18 @@
         }
       }
     },
+    "qualityGate": {
+      "type": "object",
+      "properties": {
+        "maxColors": { "type": "integer", "minimum": 1 },
+        "checkAspectRatio": { "type": "string" },
+        "forbiddenTokens": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "minFontSize": { "type": "number", "minimum": 12.0 }
+      }
+    },
     "exemptions": {
       "type": "object",
       "properties": {

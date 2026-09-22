@@ -6,6 +6,7 @@ Parses XML ElementTree, traces CSS inheritance and inline styles,
 and verifies that all rendered text nodes strictly comply with font-size >= 12px.
 """
 
+import os
 import sys
 import re
 import argparse
@@ -245,17 +246,179 @@ class SVGFontValidator:
             return False
 
 
+def extract_colors(svg_content: str) -> Tuple[set, set]:
+    """Extract and normalize unique colors (hex and rgb) from SVG content."""
+    hex_colors = set(re.findall(r'#(?:[0-9a-fA-F]{3}){1,2}\b', svg_content))
+    normalized = set()
+    for c in hex_colors:
+        c = c.upper()
+        if len(c) == 4:
+            c = '#' + c[1] * 2 + c[2] * 2 + c[3] * 2
+        normalized.add(c)
+    rgb_colors = set(re.findall(r'rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)', svg_content))
+    return normalized, rgb_colors
+
+
+def check_aspect_ratio(root: ET.Element, expected_ratio_str: str) -> Tuple[bool, str]:
+    """Verify SVG aspect ratio against expected ratio (e.g. '16:9')."""
+    if not expected_ratio_str:
+        return True, ""
+    try:
+        rw, rh = [float(x) for x in expected_ratio_str.split(':')]
+        target_ratio = rw / rh
+    except Exception:
+        return True, ""
+
+    viewbox = root.attrib.get('viewBox', '')
+    width = root.attrib.get('width', '')
+    height = root.attrib.get('height', '')
+
+    if viewbox:
+        parts = [float(p) for p in viewbox.replace(',', ' ').split() if p.strip()]
+        if len(parts) == 4:
+            vb_w, vb_h = parts[2], parts[3]
+            actual = vb_w / vb_h
+            if abs(actual - target_ratio) < 0.02:
+                return True, f"Aspect ratio {expected_ratio_str} confirmed via viewBox ({vb_w}x{vb_h})"
+            else:
+                return False, f"Aspect ratio mismatch: viewBox ({vb_w}x{vb_h}) ratio is {actual:.3f}, expected {target_ratio:.3f} ({expected_ratio_str})"
+
+    if width and height:
+        try:
+            w_num = float(re.sub(r'[^\d.]', '', width))
+            h_num = float(re.sub(r'[^\d.]', '', height))
+            actual = w_num / h_num
+            if abs(actual - target_ratio) < 0.02:
+                return True, f"Aspect ratio {expected_ratio_str} confirmed via width/height ({w_num}x{h_num})"
+            else:
+                return False, f"Aspect ratio mismatch: width/height ({w_num}x{h_num}) ratio is {actual:.3f}, expected {target_ratio:.3f} ({expected_ratio_str})"
+        except Exception:
+            pass
+
+    return False, f"Unable to verify aspect ratio {expected_ratio_str} from viewBox='{viewbox}', width='{width}', height='{height}'"
+
+
+def load_tokens_config(tokens_path: Optional[str] = None, svg_file_path: Optional[str] = None) -> Dict:
+    """Load design-tokens.yaml from explicit path, SVG file parent, script parent, or cwd."""
+    search_paths = []
+    if tokens_path:
+        search_paths.append(tokens_path)
+    if svg_file_path:
+        svg_dir = os.path.dirname(os.path.abspath(svg_file_path))
+        search_paths.extend([
+            os.path.join(svg_dir, "design-tokens.yaml"),
+            os.path.join(svg_dir, "..", "design-tokens.yaml"),
+            os.path.join(svg_dir, "..", "..", "design-tokens.yaml"),
+        ])
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    search_paths.extend([
+        os.path.join(script_dir, "..", "design-tokens.yaml"),
+        os.path.join(os.getcwd(), "design-tokens.yaml"),
+    ])
+
+    for p in search_paths:
+        if os.path.isfile(p):
+            try:
+                import yaml
+                with open(p, "r", encoding="utf-8") as f:
+                    cfg = yaml.safe_load(f) or {}
+                    if cfg:
+                        return cfg
+            except Exception:
+                pass
+    return {}
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Deterministic SVG Typography Quality Gate Validator")
+    import os
+    parser = argparse.ArgumentParser(description="Deterministic SVG Typography & DOM Quality Gate Validator")
     parser.add_argument("svg_file", help="Path to the SVG file to validate")
-    parser.add_argument("--min-size", type=float, default=12.0, help="Minimum allowable font-size in px (default: 12.0)")
+    parser.add_argument("--min-size", type=float, default=None, help="Minimum allowable font-size in px (default: from tokens or 12.0)")
+    parser.add_argument("--aspect-ratio", help="Expected aspect ratio (e.g., '16:9', '4:3')")
+    parser.add_argument("--max-colors", type=int, default=None, help="Maximum allowed base chromatic colors")
+    parser.add_argument("--check-placeholders", action="store_true", help="Check and fail on placeholder tokens (TODO, TBD, etc.)")
+    parser.add_argument("--tokens", help="Path to design-tokens.yaml")
     parser.add_argument("--verbose", "-v", action="store_true", help="Print verbose details for every text node")
 
     args = parser.parse_args()
 
-    validator = SVGFontValidator(min_size=args.min_size, verbose=args.verbose)
-    success = validator.validate_file(args.svg_file)
-    sys.exit(0 if success else 1)
+    if not os.path.exists(args.svg_file):
+        print(f"ERROR: File not found: {args.svg_file}", file=sys.stderr)
+        sys.exit(1)
+
+    # 1. Load tokens configuration
+    tokens_cfg = load_tokens_config(args.tokens, args.svg_file)
+
+    # Resolve parameters from CLI or tokens
+    min_size = args.min_size
+    if min_size is None:
+        raw_floor = (tokens_cfg.get("typography", {}).get("scale", {}).get("floor", "12px"))
+        try:
+            m = re.match(r'^([\d.]+)', str(raw_floor))
+            min_size = float(m.group(1)) if m else 12.0
+        except Exception:
+            min_size = 12.0
+
+    aspect_ratio = args.aspect_ratio or tokens_cfg.get("aspectRatio")
+    qg_cfg = tokens_cfg.get("qualityGate", {})
+    max_colors = args.max_colors if args.max_colors is not None else qg_cfg.get("maxColors")
+    check_placeholders = args.check_placeholders or bool(qg_cfg.get("forbiddenTokens"))
+    forbidden_tokens = qg_cfg.get("forbiddenTokens") or ["TODO", "TBD", "FIXME", "XXX", "待定", "占位符"]
+
+    overall_success = True
+
+    # 2. Aspect ratio check
+    try:
+        tree = ET.parse(args.svg_file)
+        root = tree.getroot()
+    except Exception as e:
+        print(f"ERROR: Failed to parse SVG XML '{args.svg_file}': {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if aspect_ratio:
+        ratio_ok, ratio_msg = check_aspect_ratio(root, aspect_ratio)
+        if ratio_ok:
+            print(f"[PASS] {ratio_msg}")
+        else:
+            print(f"[FAIL] {ratio_msg}", file=sys.stderr)
+            overall_success = False
+
+    # 3. Read raw content for color & placeholder checks
+    with open(args.svg_file, "r", encoding="utf-8") as f:
+        svg_content = f.read()
+
+    # 4. Color count check
+    if max_colors is not None:
+        hex_c, rgb_c = extract_colors(svg_content)
+        total_colors = hex_c.union(rgb_c)
+        print(f"[INFO] Found {len(total_colors)} color codes: {sorted(list(total_colors))}")
+        if len(total_colors) > max_colors:
+            print(f"[FAIL] Palette exceeds {max_colors} colors limit! (Count: {len(total_colors)})", file=sys.stderr)
+            overall_success = False
+        else:
+            print(f"[PASS] Palette strictly within <= {max_colors} colors constraint (Count: {len(total_colors)})")
+
+    # 5. Placeholder tokens check
+    if check_placeholders:
+        found_tokens = [tok for tok in forbidden_tokens if tok in svg_content]
+        if found_tokens:
+            print(f"[FAIL] Found placeholder tokens: {found_tokens}", file=sys.stderr)
+            overall_success = False
+        else:
+            print("[PASS] No placeholder content detected.")
+
+    # 6. Typography floor check
+    validator = SVGFontValidator(min_size=min_size, verbose=args.verbose)
+    typo_ok = validator.validate_file(args.svg_file)
+    if not typo_ok:
+        overall_success = False
+
+    if overall_success:
+        print("\n[RESULT] Quality Gate Check PASSED.")
+        sys.exit(0)
+    else:
+        print("\n[RESULT] Quality Gate Check FAILED.", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
