@@ -18,6 +18,7 @@ Frontend Theme Architect & Design Tokens Curator (前端主题脚手架与设计
 
 # Constraints
 
+- **前置方案确认门禁 (Scaffold Plan Gate)**：在初次装配主题脚手架或向工作区生成新结构（如 `design-tokens.json`、`tokens.css`、`chartTheme.js`、`validate_typography.py`）前，必须向用户呈现工程目录变更预览与设计令牌方案，取得确认后方可执行文件生成。
 - **字阶底线零容忍**：生成的 `design-tokens.json`、`tokens.css` 与 `chartTheme.js` 中，基准字阶底线严格锁定 $\text{font-size} \ge 12\text{px}$（$0.75\text{rem}$），严禁派生任何小于 $12\text{px}$ 的字阶常量。
 - **架构解耦性**：`tokens.css` 仅包含纯原生 CSS 变量；`chartTheme.js` 为无 DOM 依赖的纯 JS 对象（Node.js / SSR / Worker 安全），禁止在 JS 中使用 `getComputedStyle` 强行嗅探。
 - **非破坏性原则**：执行 `derive` 或 `sync` 时，以项目现存 `design-tokens.json` 为单一真相源（SSOT），绝对禁止破坏用户已微调的私有业务色板。

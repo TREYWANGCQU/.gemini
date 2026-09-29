@@ -28,7 +28,8 @@ flowchart TD
     S2 --> S2_HARVEST[提取 git log 增量、PR Merge 信息<br/>与 docs/doc/wiki 文档差异]
     S2_HARVEST --> S3{步骤 3: 语义聚类与结构化合成}
     S3 --> S3_SYNTH[按 Keep a Changelog + GitHub Release 规范<br/>输出 Features / Infra / Fixes / Breaking 等维度]
-    S3_SYNTH --> S4{步骤 4: 交付物自适应分发与落盘}
+    S3_SYNTH --> S3_GATE{发布核验单门禁<br/>版本/Diff/路径核验}
+    S3_GATE -->|确认/--force| S4[步骤 4: 交付物自适应分发与落盘]
     S4 --> DONE([输出完整交付物与发布指引])
 ```
 
@@ -145,9 +146,21 @@ flowchart TD
 
 ---
 
-## Step 4: 交付物自适应分发与落盘 (Delivery Dispatching)
+---
 
-生成完毕后，自动执行以下标准化分发：
+## Step 4: 发布核验单门禁与自适应落盘 (Release Verification Gate & Dispatching)
+
+### 4.1 发布核验单门禁 (Release Verification Plan Gate)
+在将发布文档写入物理磁盘或修改工程历史之前，**严禁静默修改根目录 `CHANGELOG.md` 或执行破坏性 Git 操作**。必须首先在对话中向用户呈现 **发布核验单 (Release Candidate Plan)** 并等待确认：
+1. **跃迁区间与目标版本**：`[BaseRef..TargetRef]` 及发布时间；
+2. **拟落盘文件清单**：如 `docs/releases/Release-Notes-vX.Y.Z.md`（或对应发布路径）；
+3. **CHANGELOG 增量 Diff 预览**：拟在顶部插入的 Keep a Changelog 文本块；
+4. **高敏感变动确认**：破坏性变更、数据库脚本或容器配置变化。
+
+> **豁免路径（Fast-Path）**：若用户指令显式附带 `--force` 或明确指定了完整版本与确认意图，允许跳过交互等待直通执行落盘。
+
+### 4.2 交付物落盘与分发 (Delivery Execution)
+经核验确认后，执行以下标准化分发：
 
 1. **版本发布文档自适应落盘**：
    - 优先探测仓库文档结构：

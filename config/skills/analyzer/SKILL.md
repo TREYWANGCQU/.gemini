@@ -34,15 +34,18 @@ Document Tasks
 - Logical hierarchy
 - Indicator framework
 
-# Output Format
+# Output Format & Plan Artifact Protocol
 
-## Objectives
+For complex systems, multi-file architectural changes, or `/plan` integrations, output MUST be generated as an interactive Plan Artifact (`<ArtifactDir>/<plan_name>.md` with `RequestFeedback: true`, `UserFacing: true`), structured to match the standard Antigravity Implementation Plan:
 
-## Constraints
-- Explicitly declare boundary contract matrices (protocol RFCs, OS/host platform rigid constraints) whenever external runtime or cross-system interactions exist.
+## Goal Description
+- **Objectives**: Clear target scope and problem definition.
+- **Constraints & Hard Boundaries**: Explicitly declare boundary contract matrices (protocol RFCs, OS/host platform rigid constraints) whenever external runtime or cross-system interactions exist.
 
-## Architecture
+## Proposed Changes
+- **Architecture & System Decomposition**: Explicitly separating internal business boundaries from host/protocol physical boundaries, data flow and mathematical modeling.
+- **Work Breakdown Structure (WBS)**: Detailed phases, tasks, and concrete file impact list.
 
-## Work Breakdown Structure
-
-## Acceptance Criteria
+## Verification Plan
+- **Acceptance Criteria**: Hard criteria and quality gates.
+- **Automated/Manual Verification**: Test cases, regression checks, and failure mode defenses.

@@ -23,7 +23,8 @@ flowchart TD
     S1 -- 未指定/不确定 --> S1_ASK[探测目录并向用户确认源路径<br/>如 docs/ 或 doc/reaticle_docs/]
     S1_ASK --> S2
     S1 -- 已存在明确源 --> S2{检查 2: 前置脚手架完整?<br/>CI + 暂存区 + 换行配置}
-    S2 -- 缺失任意项 --> S2_INIT[自动创建 .github/workflows/wiki-sync.yml<br/>.gitattributes 与 build-wiki-staging 脚本]
+    S2 -- 缺失任意项 --> S2_PLAN[呈现脚手架方案并等待用户确认<br/>CI工作流/脚本/Token清单]
+    S2_PLAN --> S2_INIT[按方案创建 .github/workflows/wiki-sync.yml<br/>.gitattributes 与 build-wiki-staging 脚本]
     S2_INIT --> S3
     S2 -- 已完整 --> S3{检查 3: Wiki 远端与 Token 确认?}
     S3 -- 首次初始化 --> S3_GUIDE[指引用户创建首篇 Wiki 页面<br/>及配置 WIKI_SYNC_TOKEN Secret]
@@ -47,13 +48,14 @@ flowchart TD
 
 ---
 
-## Step 2: 前置条件检查与自动创建 GitHub CI 脚手架
+## Step 2: 前置条件检查与脚手架装配审批 (Scaffold Setup Gate)
 
-自动检查当前仓库根目录下是否存在以下必要基础设施；**若缺失任一项，自动为用户补齐创建**：
+自动检查当前仓库根目录下是否存在以下必要基础设施。**若检测到缺失任意项，严禁静默创建或覆盖根目录 `.github/workflows/wiki-sync.yml` 等工程配置**。必须先向用户呈现 **脚手架装配方案 (Scaffold Setup Plan)**，详细列出拟创建的文件清单、Token 申请指引及装配目的，**取得用户确认后方可执行落盘**：
+> **免审批直通**：若仓库已具备完整 CI 脚手架与暂存区，仅执行常规内容同步与编目更新时，直接直通执行，无需阻断。
 
 1. **GitHub Actions 持续部署工作流**：
    - 检查 `.github/workflows/wiki-sync.yml`；
-   - 若不存在，自动生成标准的 `wiki-sync.yml`。
+   - 若不存在，经确认后生成标准的 `wiki-sync.yml`。
    > [!CAUTION]
    > **关键避坑防线（防误删工作区根目录）**：
    > 历史实战踩坑证实：在 Linux 环境下，`find wiki-repo -maxdepth 1` 会把 Depth 0（`wiki-repo` 目录自身）一并列出。若缺失 `-mindepth 1`，`rm -rf` 会直接将 `wiki-repo` 自身连同 `.git` 彻底销毁，导致紧随其后的 `cp` 报 `cp: target 'wiki-repo/': No such file or directory`。

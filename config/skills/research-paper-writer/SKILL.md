@@ -78,6 +78,12 @@ Separate interpretation from observation.
 
 ---
 
+# Outline & Methodology Planning (Recommended)
+
+For full-length papers, major manuscript drafting, or extensive methodology designs, it is recommended to first propose a structured Outline Plan (covering research questions, mathematical/experimental hypotheses, methodological pipeline, and expected evidentiary matrix) for user alignment before drafting full sections.
+
+---
+
 # Evidence Standards
 
 Strong evidence:

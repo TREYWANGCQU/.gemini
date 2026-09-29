@@ -49,20 +49,23 @@ python "C:\Users\Reaticle\.gemini\config\skills\typst-archiver\scripts\archiver.
 ```
 
 ## 步骤 2: 模式判定与 Stage 2 执行
-- **情况 A：全新文档归档（Archive-Only）**
+- **情况 A：全新文档归档（Archive-Only，免审批直通）**
   直接将 staging 产物组装为独立工程，导入企业级模板，输出至 `docs/archive/`：
   ```bash
   python "C:\Users\Reaticle\.gemini\config\skills\typst-archiver\scripts\archiver.py" --input <history_docx> --output-dir <docs/archive/target_folder> --mode archive
   ```
-- **情况 B：双向会签回收（Reconcile）**
-  指定目标主文档执行合流：
-  ```bash
-  python "C:\Users\Reaticle\.gemini\config\skills\typst-archiver\scripts\archiver.py" --input <modified_docx> --target-main <path_to_main_typ> --mode reconcile
-  ```
+- **情况 B：双向会签回收（Reconcile，强制 Diff 审批门禁）**
+  在将修改合流回主工程前，**严禁静默覆盖主文档**。必须遵循合流门禁：
+  1. **生成预合流差异方案 (AST Diff Reconcile Plan)**：
+     提取并向用户完整回显拟合流的章节标题列表、段落与表格的 Diff 预览、变动范围，明确展示被保护的头部模板宏与受影响正文区间；
+  2. **等待用户确认**：经确认无破坏性冲突后，方可执行物理写入主文档：
+     ```bash
+     python "C:\Users\Reaticle\.gemini\config\skills\typst-archiver\scripts\archiver.py" --input <modified_docx> --target-main <path_to_main_typ> --mode reconcile
+     ```
 
 ## 步骤 3: 差异审查与安全校验
 1. 检查生成的 Diff 摘要，核实新增/删除段落与表格变更。
-2. 验证目标 `main.typ` 的头部 `#import`、`#show` 规则与自定义函数未被篡改。
+2. 验证目标 `main.typ` 的头部 `#import`、`#show` 规则与自定义函数未被篡改（受损率为 0）。
 3. 验证抽取图片已合流至 `assets/` 且无断链。
 
 ---
