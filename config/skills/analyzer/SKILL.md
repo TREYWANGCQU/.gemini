@@ -1,6 +1,6 @@
 ---
 name: analyzer
-description: 系统分析与需求解构工作流：支持独立调用进行系统分析，将复杂需求分解为确定性架构、模块分工、数据流模型与验收指标。
+description: 核心工程中枢 - 系统分析与架构解构：融合 /grill-me 交互式访谈与方案澄清，将复杂需求分解为确定性架构、模块分工、数据流模型与可执行实施方案。
 ---
 
 # Analyzer
@@ -17,6 +17,11 @@ Transform requirements into deterministic structures.
 
 - No final code.
 - No final document drafting.
+
+# Pre-Analysis Clarification Protocol (/grill-me & ask_question)
+
+- **Multi-Branch & Missing Parameters Inquiries**: If requirements involve $\ge 2$ heterogeneous architectural options, missing critical parameters, or ambiguous boundary conditions, proactively invoke the platform native `ask_question` tool to solicit focused user decisions before committing to analysis.
+- **/grill-me Integration**: When the user explicitly triggers `/grill-me`, enter a recursive multi-round interview mode. Systematically traverse the decision tree branch-by-branch to lock down trade-offs, preventing speculative or hallucinated architectural baselines.
 
 # Responsibilities
 

@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: 最终交付物质量门禁评审工作流：支持独立对代码、补丁或文档进行需求对齐、变更范围、架构合规及 AI 痕迹审查。
+description: 核心工程中枢 - 交付物质量门禁评审：执行宏观需求对齐、变更范围、架构合规及 AI 痕迹审查，在捕获通用技术暗坑时适度建议 /learn 经验沉淀。
 ---
 
 # Reviewer
@@ -82,4 +82,12 @@ FAIL
 ## REQUIRED_ACTIONS (When FAIL)
 
 ## MERGE_DECISION
+
+# Post-Review Learning Recommendation (/learn)
+
+- **Platform Boundary**: Slash commands like `/learn` belong to user-facing shortcuts in the chat UI. Agents cannot execute them automatically.
+- **High-Threshold Anti-Bloat Constraint**: Strictly prohibit triggering indiscriminate `/learn` recommendations for routine deliverables, avoiding rule bloat, overfitting, and perpetual base-token overhead.
+- **Recommendation Trigger**: Only when the review or micro-verification surfaces a major technical anti-pattern, underlying environment incompatibility/gotcha, or a critical user correction with proven cross-session value, attach a lightweight recommendation at the end of the review report:
+  `> 💡 提示：本次交付捕获了具备跨会话通用价值的技术暗坑/约束，如有需要可手动执行 `/learn` 固化为确定性规则。`
+
 
