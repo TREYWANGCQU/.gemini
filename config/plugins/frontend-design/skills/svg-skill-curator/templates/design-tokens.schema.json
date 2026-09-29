@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SVGDesignTokens",
+  "description": "Schema for project-local SVG design tokens and typography constraints",
+  "type": "object",
+  "required": ["name", "aspectRatio", "palette", "typography"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "aspectRatio": {
+      "type": "string",
+      "enum": ["16:9", "4:3", "1:1", "21:9"]
+    },
+    "canvas": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer", "minimum": 400 },
+        "height": { "type": "integer", "minimum": 300 }
+      }
+    },
+    "palette": {
+      "type": "object",
+      "required": ["primary", "bgBase", "bgCard", "textMain", "textSecondary"],
+      "properties": {
+        "primary": { "type": "string" },
+        "primaryHover": { "type": "string" },
+        "bgBase": { "type": "string" },
+        "bgCard": { "type": "string" },
+        "borderCard": { "type": "string" },
+        "textMain": { "type": "string" },
+        "textSecondary": { "type": "string" },
+        "accent": { "type": "string" }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "required": ["fontFamilyBase", "scale"],
+      "properties": {
+        "fontFamilyBase": { "type": "string" },
+        "scale": {
+          "type": "object",
+          "required": ["floor", "sm", "base", "lg", "xl"],
+          "properties": {
+            "floor": { "type": "string", "pattern": "^(1[2-9]|[2-9][0-9])px$" },
+            "sm": { "type": "string", "pattern": "^(1[4-9]|[2-9][0-9])px$" },
+            "base": { "type": "string", "pattern": "^(1[6-9]|[2-9][0-9])px$" },
+            "lg": { "type": "string", "pattern": "^(1[8-9]|[2-9][0-9])px$" },
+            "xl": { "type": "string", "pattern": "^(2[0-9]|[3-9][0-9])px$" },
+            "hero": { "type": "string", "pattern": "^(2[4-9]|[3-9][0-9])px$" }
+          }
+        },
+        "leading": {
+          "type": "object",
+          "properties": {
+            "tight": { "type": "number", "minimum": 1.1 },
+            "normal": { "type": "number", "minimum": 1.3 },
+            "relaxed": { "type": "number", "minimum": 1.5 }
+          }
+        }
+      }
+    },
+    "qualityGate": {
+      "type": "object",
+      "properties": {
+        "maxColors": { "type": "integer", "minimum": 1 },
+        "checkAspectRatio": { "type": "string" },
+        "forbiddenTokens": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "minFontSize": { "type": "number", "minimum": 12.0 }
+      }
+    },
+    "exemptions": {
+      "type": "object",
+      "properties": {
+        "allowMicroFontForSparklines": { "type": "boolean" },
+        "exemptionAttribute": { "type": "string" }
+      }
+    }
+  }
+}

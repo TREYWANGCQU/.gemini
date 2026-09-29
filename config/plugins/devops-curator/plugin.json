@@ -1,0 +1,6 @@
+{
+  "name": "devops-curator",
+  "displayName": "DevOps Curator",
+  "version": "1.0.0",
+  "description": "Curated collection of agent skills for release notes cataloging, changelog generation, and GitHub Wiki CI deployment."
+}

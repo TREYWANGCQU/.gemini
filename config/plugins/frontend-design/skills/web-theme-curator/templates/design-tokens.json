@@ -1,0 +1,30 @@
+{
+  "name": "tech-screen-dark",
+  "remBase": 16,
+  "palette": {
+    "primary": "#00d2ff",
+    "primaryHover": "#33dcff",
+    "bgBase": "#0a1526",
+    "bgCard": "rgba(16, 35, 63, 0.85)",
+    "textMain": "#f0f4f8",
+    "textSecondary": "#8fa2b8",
+    "border": "rgba(255, 255, 255, 0.12)",
+    "chartPalette": ["#00d2ff", "#00e599", "#ffb020", "#ff5252", "#9d65ff"]
+  },
+  "typography": {
+    "fontFamilyBase": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif",
+    "scale": {
+      "floor": "12px",
+      "sm": "14px",
+      "base": "16px",
+      "lg": "18px",
+      "xl": "24px",
+      "2xl": "32px"
+    },
+    "leading": {
+      "tight": 1.25,
+      "normal": 1.5,
+      "relaxed": 1.75
+    }
+  }
+}

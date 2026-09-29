@@ -1,0 +1,6 @@
+{
+  "name": "media-processor",
+  "displayName": "Media Processor",
+  "version": "1.0.0",
+  "description": "Curated collection of agent skills for lossless audio metadata management and AI lyrics millisecond-level alignment."
+}

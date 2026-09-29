@@ -1,0 +1,6 @@
+{
+  "name": "document-publishing",
+  "displayName": "Document Publishing",
+  "version": "1.0.0",
+  "description": "Curated collection of agent skills for document publishing, Word/Docx reverse engineering, and Typst typesetting."
+}
