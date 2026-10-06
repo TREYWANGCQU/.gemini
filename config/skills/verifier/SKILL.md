@@ -25,8 +25,7 @@ Software
 Documents & Systems
 - Numerical consistency & formula derivation bounds
 - Cross-reference consistency across target associated files
-- Network routing, DNS hijack & proxy cascade boundary conditions
-- Feature engineering & data leakage boundaries (in ML pipelines)
+- Configuration schemas, platform protocols & environmental boundary conditions
 # Local Optimization & Context Audit Rules
 - Explicitly check if the verification context could be trapped in a local optimum due to:
   - Mathematical formula simplification / parameter assumptions
@@ -39,6 +38,15 @@ Documents & Systems
   - Strictly enforce bottom-up verification: Never jump to modify L3 parameters while L0/L1 baseline checks fail.
 - **2-Fail Anti-Looping Circuit Breaker**:
   - In an active session context, if the same failure is not resolved after 2 consecutive verification rounds, upgrade status to `FAIL (Circuit Breaker Tripped)` and enforce Ground Zero Reset (清零一切未验证假设), terminating ungrounded iterative micro-tuning.
+- **Controlled Contrast & Single-Variable Elimination (受控对照与正交控制变量机制)**:
+  - **触发条件 (Trigger Conditions)**:
+    1. 连续 $\ge 2$ 轮排障未果（触发熔断），或假设矩阵全部证伪陷入死局；
+    2. 下游系统疑似存在故障掩码（Fault Masking，如无明确异常日志，或将下游解析异常、格式/时序冲突统一掩码为泛化错误码/超时）；
+    3. 出现典型异构环境分歧（如跨平台、跨运行时、跨设备环境行为不一致）。
+  - **验证三步法 (Execution Protocol)**:
+    1. **最小零依赖基线对照（Minimal Ground Truth Baseline）**：脱离上层复杂封装与业务上下文，使用最小原生探针或最简可复现用例（Minimal Reproducible Example）确立基线行为，排除宿主环境损坏等伪假设，确立问题处于封装或环境差异层。
+    2. **正交单变量消元（Single-Variable Differential Elimination）**：全面梳理基线与失败分支在输入、配置、上下文等维度的差异，严禁多变量同时调整；以单变量注入或剔除方式逐项排查破坏点。
+    3. **容差与边界死区核验（Tolerance & Boundary Deadband Audit）**：对自适应补偿、重试、滑动窗口与时间戳判定等弹性逻辑，核验边界采样抖动是否溢出对端严格判决阈值。
 - **Assumption Matrix Assessment**: Distinguish clearly between [Verified Facts] and [Unverified Assumptions].
 - **Significance-Filtered Inquiries & Human Escalation**:
   - When circuit breaker is tripped or physical host environment cannot be probed, output a structured **《排障熔断复核单》** directly under `## POTENTIAL LOCAL OPTIMA & INQUIRIES` (Blocked symptom, Disproven assumptions, Suspected conflict, Single-step physical probe command, Expected pass criterion).
@@ -53,6 +61,10 @@ FAIL (Circuit Breaker Tripped)
 ## ASSUMPTION MATRIX
 - [Verified Fact] ...
 - [Unverified Assumption] ...
+## CONTRAST EXPERIMENT MATRIX (When Controlled Contrast Triggered)
+- [Baseline Control]: 最小零依赖正向基线 / MRE 行为
+- [Differential Dimensions]: [Dim1, Dim2, ...] 待验证差异维度
+- [Single-Variable Probe Verdicts]: 单变量测试结果与因果判定
 ## POTENTIAL LOCAL OPTIMA & INQUIRIES (Omit if none)
 - Point out mathematical formulas, geometric topology, or target associated files factors.
 - Formulate specific questions for the user, or output standard 《排障熔断复核单》 if circuit breaker is tripped.
