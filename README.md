@@ -2,7 +2,8 @@
 # .gemini 个人高阶 AI 工程资产与多智能体系统底座
 
 [![Version](https://img.shields.io/badge/version-v2.0.1-blue.svg)](file:///c:/Users/Reaticle/.gemini/CHANGELOG.md)
-[![License](https://img.shields.io/badge/architecture-Antigravity_2.0-green.svg)](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/Home.md)
+[![Architecture](https://img.shields.io/badge/architecture-Antigravity_2.0-green.svg)](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/Home.md)
+[![GitHub Wiki](https://img.shields.io/badge/docs-GitHub_Wiki-brightgreen.svg)](https://github.com/TREYWANGCQU/.gemini/wiki)
 [![CI/CD](https://img.shields.io/badge/Wiki_Sync-GitHub_Actions-purple.svg)](file:///c:/Users/Reaticle/.gemini/.github/workflows/wiki-sync.yml)
 
 本项目作为个人高阶 AI 辅助软件工程、深度研报创作及多智能体系统（MAS）的全局基础设施，聚合了工程中枢、垂直领域插件、底座治理规范与持续集成流水线，为跨工作区复杂任务提供确定性交付保障。
@@ -30,13 +31,13 @@ graph TB
         DP["document-publishing<br/>Word 模板提取与 Typst 高保真排版"]
         FD["frontend-design<br/>字阶底线守卫与主题衍生"]
         MP["media-processor<br/>音频元数据治理与逐字歌词对齐"]
-        MW["modern-web-guidance<br/>现代 Web 最佳实践指引"]
+        MW["modern-web-guidance-plugin<br/>现代 Web 最佳实践指引"]
         SC["science<br/>生物计算与学术数据库检索"]
     end
 
     subgraph Governance["底座治理体系 (Base Infrastructure & Governance)"]
         Rules["GEMINI.md / 全局硬性规则<br/>生理字阶底线 (>=12px) · 事实分离 · 零占位符"]
-        WikiPipeline["scripts/build-wiki-staging.ps1<br/>Wiki Staging 编译器 + GitHub Actions CI/CD"]
+        WikiPipeline["scripts/build-wiki-staging.ps1<br/>Wiki 暂存镜像 (doc/wiki_staging/) + CI/CD"]
         StorageAudit["存储治理规范<br/>Brain / Logs / 运行时安全审计"]
     end
 
@@ -122,9 +123,11 @@ sequenceDiagram
 - **`audio-metadata-manager`**：跨格式（MP3, FLAC, WAV, M4A, OGG）无损元数据与封面批量嵌入。
 - **`ai-lyrics-aligner`**：从 AI 音乐提示词与人声音轨中提取、清洗并生成逐词/逐句高精度 LRC、SRT 与 DAW 标记轨。
 
-### 3.6 现代 Web 与科学计算 (`modern-web-guidance` & `science`)
-- **`modern-web-guidance-plugin`**：现代化 Web 应用工程架构、视觉美学与技术选型准则。
-- **`science`**：结构生物学与药物研发接口套件，直连 AlphaFold、ChEMBL、UniProt、Ensembl、PubChem 等专业数据库。
+### 3.6 现代 Web 工程最佳实践 (`modern-web-guidance-plugin`)
+- **`modern-web-guidance-plugin`**：现代化 Web 应用工程架构、视觉美学体系与性能选型准则，强化前端组件与交互规范。
+
+### 3.7 科学计算与生物医药工程 (`science`)
+- **`science`**：结构生物学与药物研发接口套件，直连 AlphaFold、ChEMBL、UniProt、Ensembl、PubChem、PubMed 等权威学术数据库，支持多序列比对、分子特性解析与文献多源检索。
 
 ---
 
@@ -152,16 +155,38 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    Dev["本地编写架构文档<br/>config/docs/*.md"] --> StagingScript["运行本地构建脚本<br/>pwsh scripts/build-wiki-staging.ps1"]
-    StagingScript --> Staged["暂存镜像目录<br/>doc/wiki_staging/*.md"]
+    Dev["本地源文档<br/>config/docs/*.md"] --> StagingScript["运行本地构建脚本<br/>pwsh scripts/build-wiki-staging.ps1"]
+    StagingScript --> Staged["本地暂存镜像<br/>doc/wiki_staging/*.md"]
     Staged --> GitPush["Git 提交并推送<br/>git push origin main"]
     GitPush --> GHA[".github/workflows/wiki-sync.yml"]
-    GHA --> GHWiki["GitHub Wiki 官方网站<br/>TREYWANGCQU/.gemini.wiki.git"]
+    GHA --> GHWiki["GitHub Wiki 官方网页<br/>TREYWANGCQU/.gemini.wiki.git"]
 ```
 
-- **源文档沉淀路径**：[`config/docs/`](file:///c:/Users/Reaticle/.gemini/config/docs/)。
-- **本地编译器**：[`scripts/build-wiki-staging.ps1`](file:///c:/Users/Reaticle/.gemini/scripts/build-wiki-staging.ps1)，负责自动将 Windows 本地绝对路径规整为 GitHub Blob 永久链接与 Wiki 内部链接。
-- **自动化同步流水线**：[`.github/workflows/wiki-sync.yml`](file:///c:/Users/Reaticle/.gemini/.github/workflows/wiki-sync.yml)，在 `main` 分支发生更新时自动化部署至 GitHub Wiki 网页端。
+### 5.1 Wiki 访问与存储路径矩阵
+
+| 维度 / 角色 | 访问端点 / 物理存储路径 | 作用与说明 |
+| :--- | :--- | :--- |
+| **🌐 在线 Wiki 官方主页** | [https://github.com/TREYWANGCQU/.gemini/wiki](https://github.com/TREYWANGCQU/.gemini/wiki) | GitHub 网页端知识库门户，面向团队与跨端阅读 |
+| **📦 远程 Wiki Git 仓库** | `https://github.com/TREYWANGCQU/.gemini.wiki.git` | GitHub Wiki 独立底层 Git 版本库，由 CI/CD 自动推送 |
+| **📂 本地 Wiki 暂存镜像目录** | [`doc/wiki_staging/`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/) | 经编译脚本规整后的 Markdown 暂存区，与远程 Wiki 1:1 映射 |
+| ├── **主页入口** | [`doc/wiki_staging/Home.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/Home.md) | Wiki 首页导航、拓扑概览与演进路线专栏 |
+| ├── **侧边栏导航** | [`doc/wiki_staging/_Sidebar.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/_Sidebar.md) | GitHub Wiki 左侧常驻多级分类导航树 |
+| └── **全局页脚声明** | [`doc/wiki_staging/_Footer.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/_Footer.md) | 包含维护标识、主仓链接与分支状态的标准页脚 |
+| **📝 架构源文档沉淀路径** | [`config/docs/`](file:///c:/Users/Reaticle/.gemini/config/docs/) | 原始架构方案与评审报告撰写源头，开发人员日常维护区 |
+| **⚙️ 本地 Wiki 编译器脚本** | [`scripts/build-wiki-staging.ps1`](file:///c:/Users/Reaticle/.gemini/scripts/build-wiki-staging.ps1) | 负责规整 Windows 本地绝对路径为 GitHub Blob 永久链接与 Wiki Slug |
+| **🚀 CI/CD 自动化部署流水线** | [`.github/workflows/wiki-sync.yml`](file:///c:/Users/Reaticle/.gemini/.github/workflows/wiki-sync.yml) | 监听 `main` 分支变动，30 秒内自动镜像同步至远程 Wiki |
+
+### 5.2 本地 Wiki 核心精选专题索引
+
+| Wiki 页面 Slug | 架构方案 / 专题报告标题 | 所属分类 | 本地镜像文件 |
+| :--- | :--- | :--- | :--- |
+| **`Release-Notes-v2.0.1`** | v2.0.1 版本发布说明 (Release Notes) | 版本发布历史 | [`Release-Notes-v2.0.1.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/Release-Notes-v2.0.1.md) |
+| **`2026-10-08-Global-Skills-Antifragility...`** | 全局技能抗脆弱性与通信协议优化演进架构方案 | 交互协议与中枢赋能 | [`2026-10-08-Global-Skills-Antifragility-and-Protocol-Optimization-Architecture.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/2026-10-08-Global-Skills-Antifragility-and-Protocol-Optimization-Architecture.md) |
+| **`2026-09-28-Global-Skills-Asset-Convergence...`** | 全局技能资产打包收敛与原生指令融合架构方案 | 技能架构与分类 | [`2026-09-28-Global-Skills-Asset-Convergence-and-Command-Integration-Architecture.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/2026-09-28-Global-Skills-Asset-Convergence-and-Command-Integration-Architecture.md) |
+| **`2026-09-24-Global-Skills-Plan-Mechanism...`** | 全局技能集成 /plan 交互门禁机制架构方案 | 交互协议与中枢赋能 | [`2026-09-24-Global-Skills-Plan-Mechanism-Integration-Architecture.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/2026-09-24-Global-Skills-Plan-Mechanism-Integration-Architecture.md) |
+| **`2026-09-20-Typography-Scale-Control...`** | 字体大小控制与矢量排版技能边界架构规范 | 字阶与排版治理 | [`2026-09-20-Typography-Scale-Control-and-Skills-Boundary-Specification.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/2026-09-20-Typography-Scale-Control-and-Skills-Boundary-Specification.md) |
+| **`2026-09-20-CSS-Typography-Control...`** | 前端字阶控制与主题脚手架技能架构方案 | 字阶与排版治理 | [`2026-09-20-CSS-Typography-Control-and-Theme-Scaffolding-Architecture.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/2026-09-20-CSS-Typography-Control-and-Theme-Scaffolding-Architecture.md) |
+| **`2026-09-18-Gemini-Directory-Storage-Audit...`** | .gemini 目录存储深度审计与安全清理专项调研报告 | 环境治理与存储安全 | [`2026-09-18-Gemini-Directory-Storage-Audit-and-Safe-Cleanup-Guide.md`](file:///c:/Users/Reaticle/.gemini/doc/wiki_staging/2026-09-18-Gemini-Directory-Storage-Audit-and-Safe-Cleanup-Guide.md) |
 
 ---
 
@@ -182,10 +207,13 @@ graph LR
 # 4. 交付质量独立证伪与数据流核验
 /verifier 白盒核验 build-wiki-staging.ps1 边界正则表达式并运行冒烟测试
 
-# 5. 编译并同步 Wiki 知识库
+# 5. 编译本地 Wiki 暂存镜像并规整路径
 pwsh scripts/build-wiki-staging.ps1
-git commit -am "docs: update architecture specifications"
+
+# 6. 提交主仓并触发 CI/CD 自动同步至 GitHub Wiki 网页端
+git commit -am "docs: update architecture specifications and wiki staging"
 git push origin main
+# 在线浏览验证: https://github.com/TREYWANGCQU/.gemini/wiki
 ```
 
 ### 6.2 下一步演进路线
