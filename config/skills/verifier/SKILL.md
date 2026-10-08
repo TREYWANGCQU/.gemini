@@ -32,6 +32,12 @@ Documents & Systems
   - Geometric topology degeneracies / boundary conditions
   - Missing dependencies or unexamined logic in target associated files
   - Asynchronous race conditions or unhandled failure fallbacks
+- **Micro-level Pipeline Contract Audit (微观数据流闭环防卫)**:
+  - 严禁陷入“局部单元测试或单点函数逻辑全绿，但模块间数据管道断裂”的局部最优陷阱。
+  - **范围边界**: 专注于验证从“输入数据类型契约”、“中转序列化转换”到“最终持久化落盘 Schema”的拓扑单射贯通性与边界容错，防范死锁。
+  - **宏观业务隔离**: 坚决不介入宏观业务交付物的业务对齐与排版视觉审计（严格留给 `/reviewer` 闭环），确保局部微观白盒证伪的低延迟与轻量级性能。
+- **Path Dependency Resistance (路径依赖审查)**:
+  - 审查修复方案是否过度依赖原有的历史实现假设。若现有路径已产生高阶死锁或多次修补无果，强制执行零基线重置（Ground Zero Reset），评估是否因局部最优阻碍了架构演进。
 - **Layered Verification Rule (Bottom-up L0 -> L1 -> L2 -> L3)**:
   - Systems & Infra: L0 Schema & Version compliance -> L1 Process & Standard logs -> L2 OS & Network protocol RFCs -> L3 Application parameters & logic.
   - Code & Documents (Isomorphic Mapping): L0 Syntax & Document schema -> L1 Compiler & Build diagnostics -> L2 Platform & Format standards -> L3 Domain logic & Content semantics.

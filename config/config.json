@@ -4,13 +4,20 @@
       "enabled": true
     },
     "science": {
-      "enabled": true
+      "enabled": true,
+      "installedFrom": {
+        "id": "antigravity-plugins-official/plugin/science",
+        "marketplace": "antigravity-plugins-official",
+        "version": "1.2.4"
+      }
     }
   },
   "sidecars": {
     "marxists_reader": {
       "enabled": true,
-      "projectId": "edd42a8e-3db8-471d-9801-6d3e00607521"
+      "projectId": "cf84a420-7b91-43c8-9944-56f046e09525",
+      "resolvedPermissions": null,
+      "schemaVersion": 1
     },
     "marxists_reader_routine": {
       "enabled": false,

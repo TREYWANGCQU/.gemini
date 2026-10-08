@@ -4,10 +4,7 @@
   "projectResources": {
     "resources": [
       {
-        "gitFolder": {
-          "folderUri": "file:///d%3A/offices/Github/AI-automation/slowly",
-          "defaultBranch": "main"
-        }
+        "folderUri": "file:///d%3A/offices/Github/AI-automation/slowly"
       }
     ]
   },

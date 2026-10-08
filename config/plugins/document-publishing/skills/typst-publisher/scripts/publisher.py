@@ -668,6 +668,8 @@ def postprocess_docx_xml(docx_path: Path):
 
 def run_publisher(input_path: Path, output_path: Path, template_path: Path = None) -> dict:
     diagnostics = []
+    input_path = input_path.resolve()
+    output_path = output_path.resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
     if not input_path.exists():

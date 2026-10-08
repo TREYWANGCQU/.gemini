@@ -28,6 +28,9 @@ For document projects:
 - Preview document outlines, tables of contents, or introductory summaries first.
 - Extract only user requirements, standards, and boundary conditions relevant to the current task.
 - Reference files using absolute links (e.g., `file:///...`) or relative paths instead of full-text duplication.
+- **Implicit Debt & Context Gatekeeper (隐式负债与上下文守门契约)**:
+  - **任务类型自适应 (Adaptive Scope)**: 仅针对多组件工程、架构重构或复杂后端服务改造激活历史负债与胶水层探测；对于文档编写、轻量脚本修改或日常数据分析，自动保持轻量提取模式，坚决保护上下文 Token 预算。
+  - **显性化沉淀**: 在复杂软件项目中，主动探查并标注“隐式约定、未声明的环境变量约束、未解耦的历史兼容胶水层与核心业务接口守门人逻辑”，提炼至 `### 关键业务接口与隐式约束`，为后续架构设计提供精准替代成本分析，构建防腐壁垒。
 
 ### Mode 2: 受限事实同步与方案补遗 (Fact-Sync Mode)
 当调用者要求更新方案遗漏事实或执行增量事实同步时：
@@ -68,6 +71,8 @@ python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.p
 ### External Dependencies
 - List exact versions and packages.
 ### Constraints
+### 关键业务接口与隐式约束 (针对复杂工程任务激活)
+- 隐式约定、未声明环境变量、兼容胶水层与核心业务守门接口。
 ### Unknown Information
 Must use the following task list format:
 - [ ] **[Unknown/Gap 1]**
