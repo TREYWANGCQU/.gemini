@@ -72,6 +72,12 @@ graph TB
 | :--- | :--- | :--- |
 | 2026-09-18 | [.gemini 目录存储深度审计与安全清理专项调研报告](2026-09-18-Gemini-Directory-Storage-Audit-and-Safe-Cleanup-Guide) | 审计 Brain、Logs 与临时存储，制定零误删安全清理标准流程。 |
 
+### 6. 版本发布历史 (Release History)
+| 发布日期 | 版本号 | 核心突破与发版概述 | 发布说明 |
+| :--- | :--- | :--- | :--- |
+| 2026-10-08 | **v2.0.1** | 核心工程中枢抗脆弱性与通信协议升级，上线 Wiki Staging 与 GitHub Actions 自动化发布流水线 | [v2.0.1 Release Notes](Release-Notes-v2.0.1) |
+| 2026-09-29 | **v2.0.0** | Antigravity 2.0 全局技能资产收敛，构建“6 核心中枢 + 5 垂直插件”拓扑与原生指令融合 | [v2.0.0 架构方案](2026-09-28-Global-Skills-Asset-Convergence-and-Command-Integration-Architecture) |
+
 ---
 
 ## 自动化持续部署 (Continuous Delivery)
