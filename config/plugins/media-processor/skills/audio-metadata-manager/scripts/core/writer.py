@@ -120,8 +120,12 @@ def _write_wav_tags(audio_path: str, tags: Dict[str, Any]) -> None:
         id3["TPE2"] = TPE2(encoding=3, text=[str(tags["album_artist"])])
     if "composer" in tags and tags["composer"] is not None:
         id3["TCOM"] = TCOM(encoding=3, text=[str(tags["composer"])])
+    if "lyricist" in tags and tags["lyricist"] is not None:
+        id3["TEXT"] = TEXT(encoding=3, text=[str(tags["lyricist"])])
     if "track_number" in tags and tags["track_number"] is not None:
         id3["TRCK"] = TRCK(encoding=3, text=[str(tags["track_number"])])
+    if "disc_number" in tags and tags["disc_number"] is not None:
+        id3["TPOS"] = TPOS(encoding=3, text=[str(tags["disc_number"])])
     if "date" in tags and tags["date"] is not None:
         id3["TDRC"] = TDRC(encoding=3, text=[str(tags["date"])])
     if "genre" in tags and tags["genre"] is not None:
@@ -224,6 +228,10 @@ def write_metadata(
         raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
     ext = path.suffix.lower()
+
+    # Automatically delegate lyrics if provided inside tags dict and not overridden
+    if lyrics_content_or_path is None and not remove_lyrics_flag and tags and "lyrics" in tags and tags["lyrics"]:
+        lyrics_content_or_path = tags["lyrics"]
 
     # 1. Update text tags
     if tags:
