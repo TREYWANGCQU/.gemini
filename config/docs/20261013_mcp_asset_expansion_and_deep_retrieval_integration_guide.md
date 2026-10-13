@@ -97,15 +97,20 @@ uv --version      # 实测：未安装 (运行 uvx 服务前必须补齐)
 }
 ```
 
-#### 步骤 3：命令行连通性冒烟测试
-在 Windows PowerShell 终端中执行验证：
+#### 步骤 3：服务挂载与连通性验证规约
+> [!IMPORTANT]
+> **严禁在终端直接运行 `npx -y exa-mcp-server --help` 进行冒烟测试**：
+> `exa-mcp-server` 基于 MCP Stdio 协议构建，其设计为等待宿主通过标准输入（stdin）发送 JSON-RPC 消息握手，并不提供传统 CLI 交互与 `--help` 参数解析。在终端直接执行会导致控制台光标无限挂起且无任何回显，此为 Stdio MCP 服务的正常规范现象，并非故障或未启动。
 
-```powershell
-# scripts/verify_exa.ps1
-$env:EXA_API_KEY = "YOUR_EXA_API_KEY_HERE"
-npx -y exa-mcp-server --help
-```
-*预期输出*：显示 `exa-mcp-server` 命令行帮助参数与支持工具清单。
+**标准验证路径**：
+1. **工具契约落盘确认（L1 物理就绪）**：
+   确认宿主完成通信握手后已自动解析生成工具 Schema：
+   - 映射目录：`~/.gemini/antigravity-ide/mcp/exa-search/`
+   - 验证存在：[web_search_exa.json](file:///C:/Users/Reaticle/.gemini/antigravity-ide/mcp/exa-search/web_search_exa.json) 与 [web_fetch_exa.json](file:///C:/Users/Reaticle/.gemini/antigravity-ide/mcp/exa-search/web_fetch_exa.json)
+2. **IDE 交互冒烟验证（L3 端到端贯通）**：
+   在 Antigravity 对话框中发送测试指令触发实际调用：
+   > *“请使用 web_search_exa 工具检索 2026 年 Google Antigravity 最新架构”*
+   若能返回完整结构化网页与研报快照结果，即证明依赖环境、API Key 鉴权及协议管道全链路畅通。
 
 ---
 
@@ -188,6 +193,12 @@ graph LR
 1. **自动挂载握手**：MCP 服务在 `mcp_config.json` 中配置后，Antigravity 宿主进程在启动或会话初始化时会自动建立 Stdio/SSE 管道握手并注册 Tool Schema。
 2. **意图驱动自发调用**：MCP 工具并非后台常驻轮询脚本，而是由 Agent 根据用户任务、Prompt 指令与上下文证据需求**自主决策发起调用**，无需人工在终端手动敲击命令触发。
 3. **熔断与降级保护**：当外部 API Key 失效、网络受阻或配额耗尽时，检索应平滑回退至内置 `search_web`。
+4. **服务与工具三元命名映射 (Naming Triplet)**：
+   - **底层包名**：`exa-mcp-server`（执行命令）
+   - **服务标识 (Server Name)**：`exa-search`（`mcp_config.json` 键名）
+   - **工具契约 (Tool Names)**：`web_search_exa` 与 `web_fetch_exa`（模型实际调用的工具函数名）
+5. **版本库追踪与物理文件解耦 (Git Untrack Decoupling)**：
+   - 对包含凭证的 `config/mcp_config.json` 执行 `git rm --cached` 仅影响 Git 暂存区索引，**本地磁盘文件依然存在且被宿主正常加载**，二者互不干扰。
 
 ### 5.3 全局 Skill 联动与更新边界 (Skill Coupling Boundaries)
 1. **框架层零入侵**：MCP 工具由宿主全局注入，所有现有非检索类 Skill（如 `/analyzer`, `/verifier`, `/builder`, `/collector`）**严禁进行任何修改**，保持职责单一性。
