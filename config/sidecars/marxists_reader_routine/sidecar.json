@@ -1,0 +1,10 @@
+{
+  "builtin": "schedule",
+  "args": [
+    "CRON_TZ=Asia/Singapore 0 9 * * 1",
+    "agentapi",
+    "new-conversation",
+    "当前时间已达到预设的每周学习时间。请执行以下步骤来处理今日的学习：\n1. 运行命令 `python D:/offices/Github/AI-automation/marxists_reader_routine/marxists_reader/marxists_reader.py get_today` 获取今日的3篇文章。\n2. 使用 `run_command` 工具在用户的默认浏览器中自动打开这3篇文章的URL（使用 PowerShell：`Start-Process \"url1\"; Start-Process \"url2\"; Start-Process \"url3\"`）。\n3. 使用 `view_file` 工具分别读取第1步命令输出中 `local_path` 字段指定的本地 HTML 缓存文件内容。\n4. 对这3篇文章分别进行分析，为每篇生成：\n   - 摘要（200字以内）\n   - 核心原文摘录（3-5条）\n   - 历史写作背景简介（150字以内）\n5. 生成今日的 Markdown 学习报告，并写入文件 `D:/offices/Github/AI-automation/marxists_reader_routine/daily_reports/report_{YYYY-MM-DD}.md`。报告应包含：\n   - 昨日已完成篇目\n   - 今日学习目标（三篇文章标题及链接）\n   - 今日文章摘要、摘录与背景简介\n   - 后续计划（明日学习目标与人物切换预告）\n6. 运行命令 `python D:/offices/Github/AI-automation/marxists_reader_routine/marxists_reader/marxists_reader.py mark_read 3` 更新进度指针。\n7. 在聊天窗口向用户展示今日的学习报告。"
+  ],
+  "display_name": "marxists_reader_routine"
+}

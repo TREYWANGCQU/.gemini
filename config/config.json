@@ -1,10 +1,24 @@
 {
   "plugins": {
+    "chrome-devtools-plugin": {
+      "installedFrom": {
+        "id": "antigravity-plugins-official/plugin/chrome-devtools-plugin",
+        "marketplace": "antigravity-plugins-official",
+        "version": "0.21.0"
+      }
+    },
+    "google-antigravity-sdk": {
+      "installedFrom": {
+        "id": "antigravity-plugins-official/plugin/google-antigravity-sdk",
+        "marketplace": "antigravity-plugins-official",
+        "version": "0.0.9"
+      }
+    },
     "modern-web-guidance-plugin": {
       "enabled": true
     },
     "science": {
-      "enabled": true,
+      "enabled": false,
       "installedFrom": {
         "id": "antigravity-plugins-official/plugin/science",
         "marketplace": "antigravity-plugins-official",
@@ -13,14 +27,8 @@
     }
   },
   "sidecars": {
-    "marxists_reader": {
-      "enabled": true,
-      "projectId": "b7d78520-ee06-4419-ba6b-8969877c6899",
-      "resolvedPermissions": null,
-      "schemaVersion": 1
-    },
     "marxists_reader_routine": {
-      "enabled": false,
+      "enabled": true,
       "projectId": "edd42a8e-3db8-471d-9801-6d3e00607521"
     },
     "test": {
