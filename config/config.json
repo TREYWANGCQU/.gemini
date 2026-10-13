@@ -16,14 +16,6 @@
     },
     "modern-web-guidance-plugin": {
       "enabled": true
-    },
-    "science": {
-      "enabled": false,
-      "installedFrom": {
-        "id": "antigravity-plugins-official/plugin/science",
-        "marketplace": "antigravity-plugins-official",
-        "version": "1.2.4"
-      }
     }
   },
   "sidecars": {
