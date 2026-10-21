@@ -70,6 +70,17 @@ Documents & Systems
 - **Cluster Divergence & Paradigm Shift Sensor (成套异构偏离与范式转移警报)**:
   - 当受检系统在 $\ge 3$ 个正交配置维度同时偏离传统经典实现，且各项偏离之间具备内在协同一致性时，禁止机械性判定为“用户多处配置错误”。
   - 必须激活范式转移警报，执行零基线重置（Ground Zero Reset），暂停盲目微调，主动核验是否存在上游架构范式跃迁。
+- **Third-Party Script Probe Audit (第三方工具探测深度与虚假故障防卫)**:
+  - **Zero-Overhead Exemption (常规零开销旁路)**: 常规标准包管理（npm, pip, cargo）及正常执行的脚本严格旁路，严禁在无报错时无故翻阅正常脚本代码。
+  - **Trigger Conditions (受限触发条件)**: 仅当第三方部署/安装/预检脚本（如 install.sh, check.py）报错阻断，且错误结论与已知系统物理事实发生因果冲突时激活。
+  - **Execution Protocol (白盒审计)**: 强制白盒审查脚本源码中的探测逻辑（如遍历深度限制、硬编码路径、过度收紧的正则），排查“浅层探测假阳性”。
+- **Out-of-Band Telemetry Decoupling (带外遥测优先与前台故障解耦)**:
+  - **Scope Restriction (适用范围门禁)**: 仅适用于虚拟化宿主机、远程服务器、无头节点等具备软硬件隔离边界的系统；常规本地单体应用、Web 前端渲染严格豁免。
+  - **Execution Protocol**: 严禁仅以前台呈现异常（如显示黑屏、UI 无响应）断言内核崩溃或服务死锁；必须优先通过独立带外通道（SSH、串口终端、内核遥测 /proc 或 sysctl）提取状态机证据（Smoking Gun），严禁在无带外证据时推倒系统基线。
+- **Order-of-Magnitude Throughput Audit (高频数据流物理吞吐与带宽量级估算)**:
+  - **Zero-Overhead Exemption (常规零开销旁路)**: 常规文本处理、低频小载荷通信、常规业务算法严格豁免，严禁无端计算总线带宽。
+  - **Trigger Conditions (受限触发条件)**: 仅在高频渲染（>=60Hz）、大分辨率（>=1080p）、大块数据跨进程同步复制或流媒体流水线中激活。
+  - **Execution Protocol (物理量级核算)**: 执行“单次载荷尺寸 × 刷新频率”的物理总线带宽估算，重点识别退化至同步内存拷贝（Copy Path）引发的系统总线与内存吞吐雪崩（如 4K 60Hz 产生 ~2GB/s 拷贝开销导致光标卡顿）。
 - **Significance-Filtered Inquiries & Human Escalation**:
   - When circuit breaker is tripped or physical host environment cannot be probed, output a structured **《排障熔断复核单》** directly under `## POTENTIAL LOCAL OPTIMA & INQUIRIES` (Blocked symptom, Disproven assumptions, Suspected conflict, Single-step physical probe command, Expected pass criterion).
   - **Trilemma Escalation (不可能三角决策升级)**: 当触发跷跷板振荡或多约束互斥熔断时，严禁输出常规代码修改块，必须在 `## POTENTIAL LOCAL OPTIMA & INQUIRIES` 中输出标准化 **《不可能三角仲裁申请单》**（声明互斥约束矩阵、振荡因果链、根本冲突本质，并提供 $\le 3$ 个具备明晰损益权衡的结构化决策选项，标注 Recommended 推荐倾向），主动邀请用户下达顶层取舍裁决。
