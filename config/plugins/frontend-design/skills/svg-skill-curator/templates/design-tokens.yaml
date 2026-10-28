@@ -21,7 +21,7 @@ palette:
   accent: "#10b981"
 
 typography:
-  fontFamilyBase: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif"
+  fontFamilyBase: '"Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif'
   scale:
     floor: "12px"      # 生理可读性硬性底线 (严禁配置低于 12px)
     sm: "14px"         # 次要正文与列表项

@@ -329,6 +329,36 @@ def load_tokens_config(tokens_path: Optional[str] = None, svg_file_path: Optiona
     return {}
 
 
+
+def check_cjk_font_precedence(svg_content: str) -> List[str]:
+    """Check if font-family has Western-first fonts before CJK fonts, risking SimSun fallback."""
+    warnings = []
+    ff_matches = re.finditer(r'font-family\s*[:=]\s*["\']?([^;"\'>\n]+)["\']?', svg_content, re.IGNORECASE)
+    western_names = {'segoe ui', 'arial', 'roboto', 'helvetica', 'times new roman', '-apple-system', 'blinkmacsystemfont'}
+    cjk_names = {'noto sans sc', 'microsoft yahei', 'pingfang sc', 'simhei', 'source han sans sc', 'hiragino sans gb'}
+    
+    seen = set()
+    for m in ff_matches:
+        raw_stack = m.group(1).strip()
+        if raw_stack in seen:
+            continue
+        seen.add(raw_stack)
+        tokens = [t.strip().strip("'\"").lower() for t in raw_stack.split(',')]
+        first_western_idx = -1
+        first_cjk_idx = -1
+        for idx, t in enumerate(tokens):
+            if any(w in t for w in western_names) and first_western_idx == -1:
+                first_western_idx = idx
+            if any(c in t for c in cjk_names) and first_cjk_idx == -1:
+                first_cjk_idx = idx
+        if first_western_idx != -1 and (first_cjk_idx == -1 or first_western_idx < first_cjk_idx):
+            warnings.append(
+                f"Western-first font-family '{raw_stack}' detected! "
+                "In Typst/resvg, Western fonts (e.g. Segoe UI) will capture glyph matching and fall back Chinese to SimSun. "
+                "Recommend Scheme B: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif."
+            )
+    return warnings
+
 def main():
     import os
     parser = argparse.ArgumentParser(description="Deterministic SVG Typography & DOM Quality Gate Validator")
@@ -406,6 +436,14 @@ def main():
             overall_success = False
         else:
             print("[PASS] No placeholder content detected.")
+
+        # 5.1 CJK Font Precedence check (Scheme B)
+    cjk_warns = check_cjk_font_precedence(svg_content)
+    if cjk_warns:
+        for w in cjk_warns:
+            print(f"[WARN] {w}", file=sys.stderr)
+    else:
+        print("[PASS] Font family CJK precedence compliant (Scheme B).")
 
     # 6. Typography floor check
     validator = SVGFontValidator(min_size=min_size, verbose=args.verbose)

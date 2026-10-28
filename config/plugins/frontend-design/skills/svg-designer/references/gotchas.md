@@ -150,6 +150,27 @@
 
 ---
 
+
+---
+
+### 8. Western Font Precedence Triggering CJK Fallback to SimSun in Typst / resvg (西文字体置前导致 Typst 异常回退为宋体)
+
+**Cause:** 在 SVG 中声明复合字体栈时，直接照搬 Web 惯用的 `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif`。在 Typst / resvg 渲染引擎下，引擎找不到 Apple 字体后立即命中 `Segoe UI` 并将其选定为主字体。但 `Segoe UI` 是纯西文字体、不包含中文字形，引擎只能将中文字符回退至系统底层的宋体（SimSun），导致数字/西文为无衬线、中文突变为宋体，严重割裂。
+
+**Solution:** 严格执行**方案B（中文字体前置锁定）**，将兼具完整中西文字形的系统无衬线字体（思源黑体、微软雅黑）放在第一顺位，严禁西文字体排在中文字体之前：
+
+```xml
+<!-- ❌ BAD — 纯西文字体 Segoe UI 排在前列，触发 Typst 中文宋体回退 -->
+<text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif">
+  数智路桥维护管养平台
+</text>
+
+<!-- ✅ GOOD — 方案B：思源黑体与微软雅黑前置锁定，中西文无缝现代呈现 -->
+<text font-family="Noto Sans SC, Microsoft YaHei, PingFang SC, sans-serif">
+  数智路桥维护管养平台
+</text>
+```
+
 ## Limits
 
 | Limit (约束项) | Hard Limit (硬性阈值) | Recommended Value (推荐基准) | Notes |

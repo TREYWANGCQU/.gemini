@@ -20,6 +20,7 @@ Vector Typography Engine & Layout Solver (运行时矢量排版引擎与质检�
 
 - **字阶生理底线**：常规文本禁止声明任何低于 $12\text{px}$ 的字号（包括属性、内联样式与 `<style>` 选择器）。
 - **空间代偿优先律**：空间受限时，严禁通过压缩字号（如 8px~10px）来避免溢出，必须依序执行：文本精炼 $\to$ `<tspan>` 显式折行 $\to$ 容器与画布几何级联外扩。
+- **CJK 字体前置锁定律 (方案B)**：针对中文排版，严禁将纯西文字体（如 `Segoe UI`, `Arial`, `Roboto`）排在首位；统一声明方案B字体契约：`font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;`，杜绝桌面/印刷排版引擎（如 Typst / resvg）因缺失中文字形而将中文错误降级回退为宋体（SimSun）。
 - **纯净通用领域**：严禁在全局技能中硬编码具体项目的私有色板或专有图标；项目特化参数必须解耦至各项目的 `design-tokens.yaml`。
 - **排他性质量门禁**：质检拦截必须基于真实 XML DOM 解析树（`scripts/validate_svg.py`），严禁使用单行正则粗暴替代。
 
@@ -117,12 +118,12 @@ flowchart TD
     <rect width="320" height="180" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5" filter="url(#card-shadow)" />
     
     <!-- 卡片标题: 16px Medium -->
-    <text x="24" y="36" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="600" fill="#f8fafc">
+    <text x="24" y="36" font-family="Noto Sans SC, Microsoft YaHei, PingFang SC, sans-serif" font-size="16" font-weight="600" fill="#f8fafc">
       数据接入网关服务
     </text>
 
     <!-- 说明文本: 12px Floor，多行显式折行 -->
-    <text x="24" y="70" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#94a3b8">
+    <text x="24" y="70" font-family="Noto Sans SC, Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#94a3b8">
       <tspan x="24">支持多种工业协议（MQTT / OPC-UA /</tspan>
       <tspan x="24" dy="1.35em">Modbus）的高吞吐异步接入与协议解包，</tspan>
       <tspan x="24" dy="1.35em">保障下位机毫秒级时序数据精准同步。</tspan>
