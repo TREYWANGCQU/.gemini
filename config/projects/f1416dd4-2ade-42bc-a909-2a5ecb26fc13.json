@@ -27,7 +27,8 @@
         "command(Get-ChildItem -Path \"d:\\offices\\Github\\AI-automation\\slowly\" -Recurse; Get-ChildItem -Path \"C:\\Users\\Reaticle\\.gemini\\antigravity\\knowledge\" -Recurse -ErrorAction SilentlyContinue)",
         "command(Get-ChildItem -Path \"C:\\Users\\Reaticle\\.gemini\\antigravity\\knowledge\\penpals\" -ErrorAction SilentlyContinue | Select-Object Name)"
       ]
-    }
+    },
+    "v2Migrated": true
   },
   "settings": {
     "fileAccessPolicy": "AGENT_SETTING_POLICY_ASK",

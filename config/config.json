@@ -4,7 +4,7 @@
       "installedFrom": {
         "id": "antigravity-plugins-official/plugin/chrome-devtools-plugin",
         "marketplace": "antigravity-plugins-official",
-        "version": "0.21.0"
+        "version": "1.10.1"
       }
     },
     "google-antigravity-sdk": {
@@ -35,10 +35,48 @@
         "read_file(C:\\Users\\Reaticle\\config\\global_workflows)",
         "mcp(chrome_devtools/evaluate_script)",
         "execute_url(192.168.254.16)",
-        "read_url(sing-box.sagernet.org)"
+        "read_url(sing-box.sagernet.org)",
+        "execute_url(localhost)",
+        "read_file(C:\\Users\\Reaticle\\.gemini)",
+        "command(typst)",
+        "command(Copy-Item)",
+        "execute_url()",
+        "command(Get-ChildItem)",
+        "read_file(D:\\offices\\Github\\typstTemlate\\GBK-writing\\0.1.0\\lib.typ)",
+        "read_file(D:\\offices\\Github\\typstTemlate\\GBK-writing\\0.1.0\\utils\\style.typ)",
+        "read_file(D:\\offices\\Github\\typstTemlate\\GBK-writing\\0.1.0\\utils\\indent.typ)",
+        "read_file(D:\\offices\\Github\\typstTemlate\\GBK-writing\\一般示例.typ)",
+        "read_file(D:\\offices\\Github\\typstTemlate\\GBK-writing\\会议通知.typ)",
+        "execute_url(192.168.254.15)",
+        "read_url(http://192.168.254.15/static/uploads/norms/verify_probe.jsp?cmd=whoami)",
+        "command(Get-Content)",
+        "command(powershell)",
+        "command(git diff)",
+        "command(git checkout)",
+        "execute_url(fire.cmcuai.com)",
+        "command(npm run)",
+        "command(npx)",
+        "execute_url(127.0.0.1)",
+        "read_url(smartcity.cqcred.com)",
+        "execute_url(smartcity.cqcred.com)",
+        "write_file(C:\\Users\\Reaticle\\.gemini\\config\\skills\\typst-docx-publisher\\scripts\\publisher.py)",
+        "command(python -c \"\nimport zipfile, xml.etree.ElementTree as ET\nfrom pathlib import Path\n\nref_path = Path(r'C:\\Users\\Reaticle\\.gemini\\config\\templates\\reference-gbk.docx')\nwith zipfile.ZipFile(ref_path) as z:\n    print('Zip files in reference-gbk.docx:', z.namelist())\n    styles_xml = z.read('word/styles.xml')\n    tree = ET.fromstring(styles_xml)\n    w_ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'\n    ns = {'w': w_ns}\n    for s in tree.findall('w:style', ns):\n        sid = s.attrib.get(f'{{{w_ns}}}styleId')\n        if sid in ['Heading1', 'Heading2', 'Heading3', 'Heading4', 'Normal', 'BodyText', 'FirstParagraph']:\n            name = s.find('w:name', ns)\n            name_val = name.attrib.get(f'{{{w_ns}}}val') if name is not None else ''\n            pPr = s.find('w:pPr', ns)\n            rPr = s.find('w:rPr', ns)\n            sz = rPr.find('w:sz', ns).attrib.get(f'{{{w_ns}}}val') if rPr is not None and rPr.find('w:sz', ns) is not None else 'None'\n            fonts = rPr.find('w:rFonts', ns).attrib if rPr is not None and rPr.find('w:rFonts', ns) is not None else {}\n            numPr = pPr.find('w:numPr', ns) if pPr is not None else None\n            ind = pPr.find('w:ind', ns).attrib if pPr is not None and pPr.find('w:ind', ns) is not None else {}\n            sp = pPr.find('w:spacing', ns).attrib if pPr is not None and pPr.find('w:spacing', ns) is not None else {}\n            jc = pPr.find('w:jc', ns).attrib if pPr is not None and pPr.find('w:jc', ns) is not None else {}\n            print(f'StyleId={sid:15} Name={name_val:15} sz={sz:4} eastAsia={fonts.get(f\\\"{{{w_ns}}}eastAsia\\\", \\\"\\\"):12} ind={str(ind):25} sp={str(sp):35} numPr={numPr is not None}')\n\")",
+        "command(python -c \"import zipfile, xml.etree.ElementTree as ET; from pathlib import Path; ref_path = Path(r'C:\\Users\\Reaticle\\.gemini\\config\\templates\\reference-gbk.docx'); z = zipfile.ZipFile(ref_path); print('Namelist:', z.namelist()); s_tree = ET.fromstring(z.read('word/styles.xml')); w = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'; [print(s.attrib.get(w+'styleId'), 'rPr:', [(e.tag.replace(w,''), e.attrib) for e in s.find(w+'rPr')] if s.find(w+'rPr') is not None else [], 'pPr:', [(e.tag.replace(w,''), e.attrib) for e in s.find(w+'pPr')] if s.find(w+'pPr') is not None else []) for s in s_tree.findall(w+'style') if s.attrib.get(w+'styleId') in ['Heading1','Heading2','Heading3','Heading4','Normal','BodyText','FirstParagraph']]\")",
+        "read_url(raw.githubusercontent.com)",
+        "command(python -c \"import sys; print(sys.executable)\")",
+        "execute_url(183.230.3.169)",
+        "read_url(api.github.com)",
+        "read_url(pkgs.alpinelinux.org)",
+        "execute_url(rbms.cqctrb.cn)",
+        "read_url(github.com)",
+        "command(typst --version)",
+        "mcp(chrome-devtools-mcp/get_network_request)"
       ]
     },
+    "permissionGrantsV2Migrated": true,
     "remoteControlHostname": "desktop-7e09fko-zero-galaxy",
-    "themeMode": "THEME_MODE_LIGHT"
+    "sandboxEnabledAtV2Migration": false,
+    "themeMode": "THEME_MODE_LIGHT",
+    "browserJsExecutionPolicy": "BROWSER_JS_EXECUTION_POLICY_DISABLED"
   }
 }
