@@ -18,7 +18,7 @@ Generate final deliverables.
 - Follow analyzer outputs when available, or directly follow verified requirements and facts.
 - Follow verified facts only.
 - No placeholder content.
-- **Plan-Gate Enforcement**: For modifications spanning multiple files ($\ge 2$), contract changes, or system refactoring, an approved Plan Artifact (e.g., `<ArtifactDir>/implementation_plan.md`) MUST exist in context before writing or modifying source files (`write_to_file`, `replace_file_content`). If absent, proactively halt and prompt the user to trigger `/plan` or `/analyzer`.
+- **Plan-Gate Enforcement**: For modifications spanning multiple files ($\ge 2$), contract changes, or system refactoring, an approved Plan Artifact (e.g., `<ArtifactDir>/implementation_plan.md`) MUST exist in context before writing or modifying source files (`write_file`, `edit_file`). If absent, proactively halt and prompt the user to trigger `/plan` or `/analyzer`.
 - **Fast-Path Bypass**: Single-file lightweight local tweaks (e.g., single typo, localized comment, or isolated patch) are exempt and may execute directly without pre-planning ceremony.
 
 # Goal-Mode Autonomous Contract (/goal)
