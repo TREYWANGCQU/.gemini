@@ -9,7 +9,17 @@
     "textMain": "#f0f4f8",
     "textSecondary": "#8fa2b8",
     "border": "rgba(255, 255, 255, 0.12)",
-    "chartPalette": ["#00d2ff", "#00e599", "#ffb020", "#ff5252", "#9d65ff"]
+    "auxiliary": {
+      "warning": "#ffb020",
+      "danger": "#ff5252",
+      "success": "#00e599"
+    },
+    "chartPalette": [
+      "#00d2ff",
+      "#ffb020",
+      "#ff5252",
+      "#00e599"
+    ]
   },
   "typography": {
     "fontFamilyBase": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif",

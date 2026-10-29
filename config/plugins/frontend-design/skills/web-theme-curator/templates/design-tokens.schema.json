@@ -16,7 +16,7 @@
     },
     "palette": {
       "type": "object",
-      "required": ["primary", "bgBase", "textMain", "textSecondary"],
+      "required": ["primary", "bgBase", "textMain", "textSecondary", "auxiliary", "chartPalette"],
       "properties": {
         "primary": { "type": "string" },
         "primaryHover": { "type": "string" },
@@ -25,8 +25,21 @@
         "textMain": { "type": "string" },
         "textSecondary": { "type": "string" },
         "border": { "type": "string" },
+        "auxiliary": {
+          "type": "object",
+          "description": "严格约束不超过3个语义辅助色 (1+3契约: warning, danger, success)",
+          "required": ["warning", "danger", "success"],
+          "additionalProperties": false,
+          "properties": {
+            "warning": { "type": "string" },
+            "danger": { "type": "string" },
+            "success": { "type": "string" }
+          }
+        },
         "chartPalette": {
           "type": "array",
+          "description": "图表色板必须严格限定为 [Primary, Aux1, Aux2, Aux3]，总数 <= 4",
+          "maxItems": 4,
           "items": { "type": "string" }
         }
       }
