@@ -1,13 +1,23 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "DesignTokensSchema",
-  "description": "Schema definition for design-tokens.json enforced by web-theme-curator",
+  "title": "DesignTokensSchemaV2",
+  "description": "Schema definition for design-tokens.json enforced by web-theme-curator (V2 Multi-Scenario Decoupled Architecture)",
   "type": "object",
   "required": ["name", "palette", "typography"],
   "properties": {
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$"
+    },
+    "scenario": {
+      "type": "string",
+      "enum": ["academic-paper", "presentation-deck", "saas-enterprise", "editorial-minimal", "tech-console"],
+      "default": "tech-console"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["light", "dark"],
+      "default": "dark"
     },
     "remBase": {
       "type": "number",
@@ -16,18 +26,37 @@
     },
     "palette": {
       "type": "object",
-      "required": ["primary", "bgBase", "textMain", "textSecondary", "auxiliary", "chartPalette"],
+      "required": ["primary", "neutral", "categorical", "functional", "decorative"],
       "properties": {
         "primary": { "type": "string" },
         "primaryHover": { "type": "string" },
-        "bgBase": { "type": "string" },
-        "bgCard": { "type": "string" },
-        "textMain": { "type": "string" },
-        "textSecondary": { "type": "string" },
-        "border": { "type": "string" },
-        "auxiliary": {
+        "neutral": {
           "type": "object",
-          "description": "严格约束不超过3个语义辅助色 (1+3契约: warning, danger, success)",
+          "required": ["bgBase", "bgCard", "border", "textMain", "textSecondary"],
+          "properties": {
+            "bgBase": { "type": "string" },
+            "bgScreen": { "type": "string" },
+            "bgCard": { "type": "string" },
+            "bgCardSub": { "type": "string" },
+            "bgHover": { "type": "string" },
+            "border": { "type": "string" },
+            "borderDim": { "type": "string" },
+            "textWhite": { "type": "string" },
+            "textTitle": { "type": "string" },
+            "textMain": { "type": "string" },
+            "textSecondary": { "type": "string" },
+            "textDim": { "type": "string" }
+          }
+        },
+        "categorical": {
+          "type": "array",
+          "description": "常态图表与分类色 (最多4色)，严格与告警解耦，严禁包含红黄绿告警杂色",
+          "maxItems": 4,
+          "items": { "type": "string" }
+        },
+        "functional": {
+          "type": "object",
+          "description": "态势与异常告警色 (仅限 warning, danger, success，仅在告警通道使用)",
           "required": ["warning", "danger", "success"],
           "additionalProperties": false,
           "properties": {
@@ -36,11 +65,14 @@
             "success": { "type": "string" }
           }
         },
-        "chartPalette": {
-          "type": "array",
-          "description": "图表色板必须严格限定为 [Primary, Aux1, Aux2, Aux3]，总数 <= 4",
-          "maxItems": 4,
-          "items": { "type": "string" }
+        "decorative": {
+          "type": "object",
+          "description": "装饰性图标与卡片垫底规范 (双层弱化渲染)",
+          "properties": {
+            "fillTint": { "type": "string", "description": "低透明度背景垫底 (8%~15% Alpha)" },
+            "stroke": { "type": "string", "description": "装饰边框与细图标描边" },
+            "iconWeight": { "type": "number", "description": "图标描边粗细 (1.25px~1.75px)" }
+          }
         }
       }
     },
@@ -49,6 +81,7 @@
       "required": ["fontFamilyBase", "scale"],
       "properties": {
         "fontFamilyBase": { "type": "string" },
+        "fontFamilyNum": { "type": "string" },
         "scale": {
           "type": "object",
           "required": ["floor", "base"],

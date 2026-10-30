@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "SVGDesignTokens",
-  "description": "Schema for project-local SVG design tokens and typography constraints",
+  "title": "SVGDesignTokensV2",
+  "description": "Schema for project-local SVG design tokens, multi-scenario color contracts, and typography constraints",
   "type": "object",
   "required": ["name", "aspectRatio", "palette", "typography"],
   "properties": {
@@ -9,15 +9,27 @@
       "type": "string",
       "pattern": "^[a-z0-9-]+$"
     },
+    "scenario": {
+      "type": "string",
+      "enum": ["academic-paper", "presentation-deck", "saas-enterprise", "editorial-minimal", "tech-console"],
+      "default": "presentation-deck"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["light", "dark"],
+      "default": "dark"
+    },
     "aspectRatio": {
       "type": "string",
-      "enum": ["16:9", "4:3", "1:1", "21:9"]
+      "enum": ["16:9", "4:3", "1:1", "21:9"],
+      "default": "16:9"
     },
     "canvas": {
       "type": "object",
       "properties": {
         "width": { "type": "integer", "minimum": 400 },
-        "height": { "type": "integer", "minimum": 300 }
+        "height": { "type": "integer", "minimum": 300 },
+        "padding": { "type": "integer", "minimum": 0 }
       }
     },
     "palette": {
@@ -31,7 +43,35 @@
         "borderCard": { "type": "string" },
         "textMain": { "type": "string" },
         "textSecondary": { "type": "string" },
-        "accent": { "type": "string" }
+        "accent": { "type": "string" },
+        "categorical": {
+          "type": "array",
+          "description": "常态图表与分类色 (最多4色)，严格与告警解耦，严禁包含红黄绿告警杂色",
+          "maxItems": 4,
+          "items": { "type": "string" }
+        },
+        "functional": {
+          "type": "object",
+          "properties": {
+            "warning": { "type": "string" },
+            "danger": { "type": "string" },
+            "success": { "type": "string" }
+          }
+        },
+        "decorative": {
+          "type": "object",
+          "properties": {
+            "badgeFill": { "type": "string" },
+            "badgeStroke": { "type": "string" },
+            "iconWeight": { "type": "number" }
+          }
+        }
+      }
+    },
+    "patterns": {
+      "type": "object",
+      "properties": {
+        "academicHatch": { "type": "boolean", "description": "启用学术图表网纹与虚线填充支持" }
       }
     },
     "typography": {
@@ -59,6 +99,14 @@
             "relaxed": { "type": "number", "minimum": 1.5 }
           }
         }
+      }
+    },
+    "card": {
+      "type": "object",
+      "properties": {
+        "rx": { "type": "number" },
+        "strokeWidth": { "type": "number" },
+        "paddingInner": { "type": "number" }
       }
     },
     "qualityGate": {

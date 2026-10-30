@@ -21,7 +21,8 @@
   "sidecars": {
     "marxists_reader_routine": {
       "enabled": true,
-      "projectId": "edd42a8e-3db8-471d-9801-6d3e00607521"
+      "projectId": "9e08f0b1-b1ce-44d9-a5ba-ca8ba878b157",
+      "schemaVersion": 1
     },
     "test": {
       "enabled": false,
@@ -29,6 +30,7 @@
     }
   },
   "userSettings": {
+    "browserJsExecutionPolicy": "BROWSER_JS_EXECUTION_POLICY_DISABLED",
     "globalPermissionGrants": {
       "allow": [
         "read_url(marxists.org)",
@@ -76,7 +78,6 @@
     "permissionGrantsV2Migrated": true,
     "remoteControlHostname": "desktop-7e09fko-zero-galaxy",
     "sandboxEnabledAtV2Migration": false,
-    "themeMode": "THEME_MODE_LIGHT",
-    "browserJsExecutionPolicy": "BROWSER_JS_EXECUTION_POLICY_DISABLED"
+    "themeMode": "THEME_MODE_LIGHT"
   }
 }

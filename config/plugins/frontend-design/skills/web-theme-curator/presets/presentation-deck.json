@@ -1,0 +1,56 @@
+{
+  "name": "presentation-deck",
+  "scenario": "presentation-deck",
+  "mode": "dark",
+  "remBase": 16,
+  "palette": {
+    "primary": "#3b82f6",
+    "primaryHover": "#60a5fa",
+    "neutral": {
+      "bgBase": "#0f172a",
+      "bgScreen": "#090d16",
+      "bgCard": "#1e293b",
+      "bgCardSub": "rgba(30, 41, 59, 0.6)",
+      "bgHover": "rgba(59, 130, 246, 0.12)",
+      "border": "#334155",
+      "borderDim": "rgba(255, 255, 255, 0.1)",
+      "textWhite": "#ffffff",
+      "textTitle": "#f8fafc",
+      "textMain": "#f1f5f9",
+      "textSecondary": "#94a3b8",
+      "textDim": "#64748b"
+    },
+    "categorical": [
+      "#2563eb",
+      "#3b82f6",
+      "#60a5fa",
+      "#93c5fd"
+    ],
+    "functional": {
+      "warning": "#f59e0b",
+      "danger": "#ef4444",
+      "success": "#10b981"
+    },
+    "decorative": {
+      "fillTint": "rgba(59, 130, 246, 0.12)",
+      "stroke": "#3b82f6",
+      "iconWeight": 1.5
+    }
+  },
+  "typography": {
+    "fontFamilyBase": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif",
+    "scale": {
+      "floor": "12px",
+      "sm": "14px",
+      "base": "16px",
+      "lg": "18px",
+      "xl": "24px",
+      "2xl": "32px"
+    },
+    "leading": {
+      "tight": 1.25,
+      "normal": 1.5,
+      "relaxed": 1.75
+    }
+  }
+}

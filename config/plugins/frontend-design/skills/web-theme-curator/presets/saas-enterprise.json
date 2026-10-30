@@ -1,0 +1,56 @@
+{
+  "name": "saas-enterprise",
+  "scenario": "saas-enterprise",
+  "mode": "light",
+  "remBase": 16,
+  "palette": {
+    "primary": "#4f46e5",
+    "primaryHover": "#4338ca",
+    "neutral": {
+      "bgBase": "#f4f4f5",
+      "bgScreen": "#ffffff",
+      "bgCard": "#ffffff",
+      "bgCardSub": "#f8fafc",
+      "bgHover": "rgba(79, 70, 229, 0.06)",
+      "border": "#e4e4e7",
+      "borderDim": "#f4f4f5",
+      "textWhite": "#ffffff",
+      "textTitle": "#18181b",
+      "textMain": "#27272a",
+      "textSecondary": "#71717a",
+      "textDim": "#a1a1aa"
+    },
+    "categorical": [
+      "#4f46e5",
+      "#06b6d4",
+      "#3b82f6",
+      "#64748b"
+    ],
+    "functional": {
+      "warning": "#f59e0b",
+      "danger": "#ef4444",
+      "success": "#10b981"
+    },
+    "decorative": {
+      "fillTint": "rgba(79, 70, 229, 0.08)",
+      "stroke": "#4f46e5",
+      "iconWeight": 1.5
+    }
+  },
+  "typography": {
+    "fontFamilyBase": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif",
+    "scale": {
+      "floor": "12px",
+      "sm": "14px",
+      "base": "16px",
+      "lg": "18px",
+      "xl": "24px",
+      "2xl": "32px"
+    },
+    "leading": {
+      "tight": 1.25,
+      "normal": 1.5,
+      "relaxed": 1.75
+    }
+  }
+}
