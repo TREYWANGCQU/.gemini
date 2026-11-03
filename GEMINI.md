@@ -26,6 +26,7 @@ description: Universal Rules & Engineering Guidelines
 - For initial research, code scans, or context collection, use structural previews, tables of contents, outlines, or key snippet extractions instead of copying entire raw files.
 - Prefer referencing files using absolute links (e.g., `file:///...`) or relative paths over full-text copy-paste.
 - Summarization and structural omission are permitted and encouraged in intermediate research notes or material collection artifacts to optimize token usage and focus.
+- **Multimodal Read Gate**: Unless the user explicitly requests inspection or analysis of an image or video, do not proactively call `read_file` or any tool to ingest visual/audio media files (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`, `.mp4`, `.mov`, `.avi`, `.mkv`, etc.). Limit actions strictly to metadata verification (file existence, file size, path) to prevent unnecessary multimodal token consumption.
 
 # Document Integrity
 
