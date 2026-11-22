@@ -45,14 +45,14 @@ flowchart TD
 ## 步骤 1: 触发 Stage 1 独立逆向净化
 调用内置逆向清洗引擎执行四层清洗（解包资产、恢复语义大纲、规范表格、Typst序列化）：
 ```bash
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\typst-archiver\scripts\archiver.py" --input <modified_docx> --output-dir .staging --mode stage1
+python ./scripts/archiver.py --input <modified_docx> --output-dir .staging --mode stage1
 ```
 
 ## 步骤 2: 模式判定与 Stage 2 执行
 - **情况 A：全新文档归档（Archive-Only，免审批直通）**
   直接将 staging 产物组装为独立工程，导入企业级模板，输出至 `docs/archive/`：
   ```bash
-  python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\typst-archiver\scripts\archiver.py" --input <history_docx> --output-dir <docs/archive/target_folder> --mode archive
+  python ./scripts/archiver.py --input <history_docx> --output-dir <docs/archive/target_folder> --mode archive
   ```
 - **情况 B：双向会签回收（Reconcile，强制 Diff 审批门禁）**
   在将修改合流回主工程前，**严禁静默覆盖主文档**。必须遵循合流门禁：
@@ -60,7 +60,7 @@ python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\typs
      提取并向用户完整回显拟合流的章节标题列表、段落与表格的 Diff 预览、变动范围，明确展示被保护的头部模板宏与受影响正文区间；
   2. **等待用户确认**：经确认无破坏性冲突后，方可执行物理写入主文档：
      ```bash
-     python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\typst-archiver\scripts\archiver.py" --input <modified_docx> --target-main <path_to_main_typ> --mode reconcile
+     python ./scripts/archiver.py --input <modified_docx> --target-main <path_to_main_typ> --mode reconcile
      ```
 
 ## 步骤 3: 差异审查与安全校验

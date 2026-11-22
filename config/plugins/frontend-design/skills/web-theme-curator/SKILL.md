@@ -1,4 +1,3 @@
-<!-- config/plugins/frontend-design/skills/web-theme-curator/SKILL.md -->
 ---
 name: web-theme-curator
 description: 前端字阶控制与主题脚手架技能：依据自然语言风格诉求推导标准设计变量契约（design-tokens.json），自动化派生解耦的 tokens.css 与 chartTheme.js，注入确定性字阶门禁（font-size >= 12px）与色彩收敛契约（1主色 + <=3辅助色）。
@@ -35,19 +34,19 @@ Frontend Theme Architect & Design Tokens Curator (前端主题脚手架与设计
 
 ```bash
 # 1. 依据预设或自然语言提示词初始化脚手架
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/web-theme-curator/scripts/curator.py scaffold --name traffic-screen --theme dark --preset tech-screen
+python ./scripts/curator.py scaffold --name traffic-screen --theme dark --preset tech-screen
 
 # 2. 从 design-tokens.json 编译派生 CSS 与 JS 资产
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/web-theme-curator/scripts/curator.py derive --tokens design-tokens.json
+python ./scripts/curator.py derive --tokens design-tokens.json
 
 # 3. 扫描项目代码字阶合规性 (质量门禁)
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/web-theme-curator/scripts/validate_typography.py src/
+python ./scripts/validate_typography.py src/
 
 # 4. 扫描项目色彩合规性 (1+3 色相与零内联杂色门禁)
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/web-theme-curator/scripts/validate_palette.py dist/ --tokens design-tokens.json
+python ./scripts/validate_palette.py dist/ --tokens design-tokens.json
 
 # 5. 同步升级全局最新模板与校验器逻辑
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/web-theme-curator/scripts/curator.py sync
+python ./scripts/curator.py sync
 ```
 
 ---
@@ -85,4 +84,4 @@ python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/web-theme
 ## 4. References & Gotchas
 
 详细踩坑案例与 BAD/GOOD 对照请参阅：
-[gotchas.md](file:///C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/web-theme-curator/references/gotchas.md)
+[gotchas.md](./references/gotchas.md)

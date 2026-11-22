@@ -1,4 +1,3 @@
-<!-- config/plugins/frontend-design/skills/svg-designer/SKILL.md -->
 ---
 name: svg-designer
 description: 矢量排版中枢与字阶质检技能：约束常规字阶生理底线（font-size >= 12px），执行空间代偿几何折行与包围盒级联推导，内置确定性 XML DOM 质检门禁。
@@ -140,7 +139,7 @@ flowchart TD
 
 ```bash
 # 质检调用示例
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-designer/scripts/validate_svg.py path/to/diagram.svg
+python ./scripts/validate_svg.py path/to/diagram.svg
 ```
 
 - **通过（Exit Code 0）**：全部文本节点与继承计算样式均满足 $\text{font-size} \ge 12\text{px}$，可正常流转至 Reviewer。
@@ -151,4 +150,4 @@ python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-desig
 ## 5. References & Pitfalls
 
 详细踩坑案例、常见错误排查与 BAD/GOOD 对照请参阅本技能参考资料：
-[gotchas.md](file:///C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-designer/references/gotchas.md)
+[gotchas.md](./references/gotchas.md)

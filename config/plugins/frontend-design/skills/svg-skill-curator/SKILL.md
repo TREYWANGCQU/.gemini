@@ -1,4 +1,3 @@
-<!-- config/plugins/frontend-design/skills/svg-skill-curator/SKILL.md -->
 ---
 name: svg-skill-curator
 description: 局部矢量技能脚手架与编目维护中枢：负责在项目工作区初始化 .agents/skills/<project>-svg-generator、生成设计变量契约与质检钩子、探测并同步版本漂移。
@@ -62,7 +61,7 @@ flowchart TD
 
 ```bash
 # 调度脚手架辅助脚本
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-skill-curator/scripts/scaffold.py scaffold --name traffic-arch-svg-generator --aspect-ratio 16:9 --theme dark
+python ./scripts/scaffold.py scaffold --name traffic-arch-svg-generator --aspect-ratio 16:9 --theme dark
 ```
 
 ### 2.2 自动装配的目录架构
@@ -88,7 +87,7 @@ python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-skill
 定期或在重大发布前，检查项目本地矢量技能是否落后于全局工程基线：
 
 ```bash
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-skill-curator/scripts/scaffold.py audit
+python ./scripts/scaffold.py audit
 ```
 
 ### 3.2 审计判定矩阵
@@ -104,7 +103,7 @@ python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-skill
 当全局 `svg-designer` 优化了字体折行算法、增加了标点补偿或强化了质检脚本时：
 
 ```bash
-python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-skill-curator/scripts/scaffold.py sync --name traffic-arch-svg-generator
+python ./scripts/scaffold.py sync --name traffic-arch-svg-generator
 ```
 
 ### 4.2 三路合并防护法则
@@ -117,4 +116,4 @@ python C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-skill
 ## 5. References & Pitfalls
 
 详细脚手架踩坑案例、模板防腐规则与 BAD/GOOD 对照请参阅本技能参考资料：
-[gotchas.md](file:///C:/Users/Reaticle/.gemini/config/plugins/frontend-design/skills/svg-skill-curator/references/gotchas.md)
+[gotchas.md](./references/gotchas.md)

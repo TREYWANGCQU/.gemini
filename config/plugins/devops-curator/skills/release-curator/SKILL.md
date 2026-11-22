@@ -182,9 +182,9 @@ flowchart TD
 
 ---
 
-## 4.3 沙箱提权与 GitHub 安全准则 (permissioned-github 契约)
+## 4.3 沙箱提权与 GitHub 安全准则 (GitHub 权限契约)
 
-在受控沙箱或自动化流水线中执行远端发布操作时，严格遵守平台 [permissioned-github](file:///C:/Users/Reaticle/.gemini/antigravity-ide/builtin/skills/permissioned-github/SKILL.md) 协议：
+在受控沙箱或自动化流水线中执行远端发布操作时，严格遵守以下平台 GitHub 安全与提权协议：
 
 1. **命令基准**：
    - 远程仓库管理、Release 创建仅允许使用官方 `gh` CLI（必须显式附带 `-R ORG/REPO` 参数）。

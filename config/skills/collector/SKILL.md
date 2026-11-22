@@ -40,29 +40,29 @@ For document projects:
 
 # Auxiliary Tooling (辅助工具)
 
-- **Script Location**: `C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py`
+- **Script Location**: `./scripts/preview_tree.py` (relative to this skill directory)
 - **Core Purpose**: Enforce token-efficient Preview-First scans, prune high-noise build/vendor artifacts, and automatically discover SSOT manifests and configuration baselines.
 
 ### Commands
 
 1. **Standard Workspace Tree Preview (Default Depth 3, auto-prune noise)**:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir]
+python ./scripts/preview_tree.py [target_dir]
 ```
 
 2. **Custom Depth & Truncation Budget (Strict Token Protection)**:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir] -d 2 -m 15 -t 100
+python ./scripts/preview_tree.py [target_dir] -d 2 -m 15 -t 100
 ```
 
 3. **Summary & Key SSOT Assets Only**:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir] --summary-only
+python ./scripts/preview_tree.py [target_dir] --summary-only
 ```
 
 4. **Structured JSON Output (Programmatic Parsing)**:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\skills\collector\scripts\preview_tree.py" [target_dir] --json
+python ./scripts/preview_tree.py [target_dir] --json
 ```
 # Output Format
 ## Context Summary

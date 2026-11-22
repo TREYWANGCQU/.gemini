@@ -190,9 +190,9 @@ flowchart TD
 
 ---
 
-## Step 5: 沙箱提权与 GitHub 安全准则 (permissioned-github 契约)
+## Step 5: 沙箱提权与 GitHub 安全准则 (GitHub 权限契约)
 
-在受控沙箱或自动化流水线中若需代理执行 `git push` 同步至远端仓库时，严格遵守 [permissioned-github](file:///C:/Users/Reaticle/.gemini/antigravity-ide/builtin/skills/permissioned-github/SKILL.md) 协议：
+在受控沙箱或自动化流水线中若需代理执行 `git push` 同步至远端仓库时，严格遵守以下平台 GitHub 安全与提权协议：
 
 1. **命令基准**：
    - 分支更新与 Commit 提交使用标准 `git` 命令。

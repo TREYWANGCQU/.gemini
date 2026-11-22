@@ -26,10 +26,10 @@ This skill provides an automated pipeline to extract ground-truth lyrics and str
 
 ### 1. Extract Ground-Truth Lyrics from Spec
 ```bash
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\ai-lyrics-aligner\scripts\extract_lyrics.py" --input "<path_to_spec.md>" --output "extracted_lyrics.json"
+python ./scripts/extract_lyrics.py --input "<path_to_spec.md>" --output "extracted_lyrics.json"
 ```
 
 ### 2. Run Audio Alignment & Export Formats
 ```bash
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\ai-lyrics-aligner\scripts\align_lyrics.py" --audio "<path_to_vocals.wav>" --lyrics "extracted_lyrics.json" --output-lrc "output.lrc" --output-srt "output.srt" --output-markers "markers.csv"
+python ./scripts/align_lyrics.py --audio "<path_to_vocals.wav>" --lyrics "extracted_lyrics.json" --output-lrc "output.lrc" --output-srt "output.srt" --output-markers "markers.csv"
 ```

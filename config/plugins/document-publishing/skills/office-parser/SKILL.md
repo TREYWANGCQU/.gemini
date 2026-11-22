@@ -9,15 +9,15 @@ This skill allows the agent to analyze modern Office files (`.docx`, `.xlsx`) an
 
 ## File Locations
 
-- Skill Folder: `C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\`
-- Execution Script: `C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py`
+- Skill Folder: `~/.gemini/config/plugins/document-publishing/skills/office-parser/`
+- Execution Script: `./scripts/office_parser.py` (relative to this skill directory)
 
 ## Available Actions
 
 ### 1. Document Structure Preview (All Formats)
 Extract metadata, outline headings/TOC, health stats, and sample text truncated at 2000 characters:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py" preview '<file_path>'
+python ./scripts/office_parser.py preview '<file_path>'
 ```
 - **`.docx`**: Paragraph style outline + first 2000 characters.
 - **`.xlsx`**: Sheet names, total rows, non-empty counts, top 10 rows preview.
@@ -27,10 +27,10 @@ python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\offi
 Extract a specific page or continuous page slice with explicit `=== PAGE N ===` verification anchors:
 ```powershell
 # Single page
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py" page '<file_path>' 21
+python ./scripts/office_parser.py page '<file_path>' 21
 
 # Page range / slice
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py" page '<file_path>' 21:25
+python ./scripts/office_parser.py page '<file_path>' 21:25
 ```
 > [!NOTE]
 > Scanned bitmap pages without vector text are automatically identified and warned with `[WARNING: Page X is a scanned bitmap image. Auto-skipped]`, preventing blank noise from consuming tokens.
@@ -38,25 +38,25 @@ python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\offi
 ### 3. Full Outline / Bookmarks Tree (`.pdf` only)
 Extract the complete bookmark and section hierarchy:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py" outline '<file_path>'
+python ./scripts/office_parser.py outline '<file_path>'
 ```
 
 ### 4. Keyword Context Search (`.docx`, `.xlsx`, `.pdf`) — *Fact Verification*
 Search for target terms across all paragraphs, sheets, or pages with immediate `[Prev]`, `[MATCH]`, `[Next]` line contexts and page tracking:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py" search '<file_path>' '<keyword>'
+python ./scripts/office_parser.py search '<file_path>' '<keyword>'
 ```
 
 ### 5. Specific Sheet Extraction (`.xlsx` only)
 Read a specific sheet by name or 1-based index with optional row range:
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py" sheet '<file_path>' <sheet_name_or_index> [start:end]
+python ./scripts/office_parser.py sheet '<file_path>' <sheet_name_or_index> [start:end]
 ```
 
 ### 6. Full Text Extraction (`.docx` & `.pdf`)
 Extract full text (use cautiously on large files):
 ```powershell
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\office-parser\scripts\office_parser.py" full '<file_path>'
+python ./scripts/office_parser.py full '<file_path>'
 ```
 
 ---

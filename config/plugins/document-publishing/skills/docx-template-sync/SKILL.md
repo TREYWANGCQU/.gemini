@@ -34,7 +34,7 @@ flowchart TD
 ## 步骤 1: 标杆文档导入与扫描
 调用内置提取引擎对输入的标杆 Word 文档进行全文字号、中西文字体、加粗、行距和文本前缀扫描：
 ```bash
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\docx-template-sync\scripts\extract_reference_template.py" --input <benchmark_docx> --output <target_reference_docx>
+python ./scripts/extract_reference_template.py --input <benchmark_docx> --output <target_reference_docx>
 ```
 
 ## 步骤 2: 样式聚类推导与合成注入

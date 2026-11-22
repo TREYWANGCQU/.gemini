@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: 核心工程中枢 - 交付物质量门禁评审：执行宏观需求对齐、变更范围、架构合规及 AI 痕迹审查，实施事实偏离定点归因与整改分流，将正式审查报告持久化输出至 config/docs。
+description: 核心工程中枢 - 交付物质量门禁评审：执行宏观需求对齐、变更范围、架构合规及 AI 痕迹审查，实施事实偏离定点归因与整改分流，将正式审查报告持久化输出至当前工作区 docs/reviews/ 或会话 Artifact 目录。
 ---
 
 # Reviewer
@@ -72,13 +72,16 @@ Check:
 - generic statements
 - unsupported conclusions
 
-# Review Report Persistence Protocol (审查报告持久化契约 - config\docs)
+# Review Report Persistence Protocol (审查报告持久化契约)
 
-- **持久化强制触发**：除极简 L0/L1 单文件原地修复（<=30 行）可仅在对话中快通呈现外，所有正式架构方案审查、多文件交付物审查或阶段性门禁评审，**必须将完整的 Review 报告输出并持久化至 `config/docs/` 目录**。
-- **文件命名契约**：`config/docs/YYYYMMDD_<project_or_module>_review_report.md`（采用当前日期 `YYYYMMDD` 与蛇形小写命名）。
+- **持久化强制触发**：除极简 L0/L1 单文件原地修复（<=30 行）可仅在对话中快通呈现外，所有正式架构方案审查、多文件交付物审查或阶段性门禁评审，**必须将完整的 Review 报告持久化输出**。
+- **目标路径优先级（规避系统保护边界）**：
+  1. **首选**：当前业务项目工作区的 `docs/reviews/` 目录（`docs/reviews/YYYYMMDD_<project_or_module>_review_report.md`）。
+  2. **降级**：若当前工作区受平台系统保护边界限制（如 `~/.gemini/config/`）或为只读环境，则持久化输出至会话 Artifact 目录（`<ArtifactDir>/YYYYMMDD_<project_or_module>_review_report.md`）；若确需归档至 `~/.gemini/config/docs/`，由用户在外部手动同步。
+- **文件命名契约**：`YYYYMMDD_<project_or_module>_review_report.md`（采用当前日期 `YYYYMMDD` 与蛇形小写命名）。
 - **双轨交付契约**：
-  1. **磁盘持久化**：将包含完整结构（Executive Summary, Findings, Auto-Remediation Log, Required Actions, Merge Decision）的 Markdown 审查报告持久化写入 `config/docs/`。
-  2. **对话端呈现**：在对话中输出结构化执行摘要、`FINAL_STATUS` 判定、关键发现与整改标签，并附带直达该持久化文件的绝对路径链接 `[Review Report](file:///C:/Users/Reaticle/.gemini/config/docs/YYYYMMDD_<name>_review_report.md)`。
+  1. **磁盘持久化**：将包含完整结构（Executive Summary, Findings, Auto-Remediation Log, Required Actions, Merge Decision）的 Markdown 审查报告持久化写入上述目标路径。
+  2. **对话端呈现**：在对话中输出结构化执行摘要、`FINAL_STATUS` 判定、关键发现与整改标签，并附带直达该持久化文件的链接 `[Review Report](file://<absolute_path_to_report>)`。
 
 # Output Format
 
@@ -90,7 +93,7 @@ PASS_WITH_WARNING
 FAIL
 
 ## PERSISTENCE_METADATA
-- Report File: `config/docs/YYYYMMDD_<target>_review_report.md`
+- Report File: `docs/reviews/YYYYMMDD_<target>_review_report.md` (或 `<ArtifactDir>/YYYYMMDD_<target>_review_report.md`)
 
 ## FINDINGS
 - [Defect L0-L3] [Requires /collector | Requires /researcher | N/A] <Issue description & concrete evidence>

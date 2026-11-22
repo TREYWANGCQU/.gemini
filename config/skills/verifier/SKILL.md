@@ -62,7 +62,7 @@ Documents & Systems
   - **Zero-Overhead Exemption (常规零开销旁路)**: 针对常规算法、业务代码、类型契约、标准库与通用已知框架（React, Linux, PyTorch 等）的白盒验证，严格执行本地零网络调用，严禁泛化外部请求。
   - **Trigger Conditions (特定生态受限触发)**: 仅当受检系统显式引用了特定的第三方开源项目、专有定制镜像或专用脚手架（如特定定制 ISO、第三方发布物仓库），且当前工作区与提示上下文中缺失其官方配置 Schema / 权威规范时触发。
   - **Execution Protocol (两级自愈与查证)**:
-    1. **Step 1 (轻量只读抓取)**: 优先自动调用平台只读工具（`read_url_content` / `web_fetch_exa`）定向检索该项目的顶层权威说明（`README.md` / `Quick Start`，单次抓取预算严格限制在 $\le 5000$ 字符），动态提取最新 Level A 契约并以此校准验证坐标系。
+    1. **Step 1 (轻量只读抓取)**: 优先自动调用平台只读工具（原生内置 `search_web` 或 `exa-search` MCP 工具 `web_fetch_exa`）定向检索该项目的顶层权威说明（`README.md` / `Quick Start`，单次抓取预算严格限制在 $\le 5000$ 字符），动态提取最新 Level A 契约并以此校准验证坐标系。
     2. **Step 2 (结构化降级问询)**: 若处于离线环境、来源不明或抓取失败，严禁凭历史通用经验强行将未知规范判定为错误，必须在 `## ASSUMPTION MATRIX` 中明确标出 `[Unverified Ecosystem Baseline]`，并在 `## POTENTIAL LOCAL OPTIMA & INQUIRIES` 中输出标准《外部生态查证委托单》。
 - **State Machine Monotonic Progression Check (时序状态机单向放行门禁)**:
   - 日志因果链分析必须遵循生命周期的时序推进事实。

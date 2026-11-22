@@ -45,15 +45,15 @@ This skill provides a unified, lossless audio metadata engineering toolchain des
 ### 1. Inspect Audio Metadata & Artwork
 ```bash
 # Human-readable summary
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\audio-metadata-manager\scripts\audio_metadata_cli.py" inspect "track.flac"
+python ./scripts/audio_metadata_cli.py inspect "track.flac"
 
 # Standard JSON output for scripts & pipelines
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\audio-metadata-manager\scripts\audio_metadata_cli.py" inspect "track.mp3" --json
+python ./scripts/audio_metadata_cli.py inspect "track.mp3" --json
 ```
 
 ### 2. Mutate Tags & Embed Artwork / Lyrics
 ```bash
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\audio-metadata-manager\scripts\audio_metadata_cli.py" mutate "track.wav" \
+python ./scripts/audio_metadata_cli.py mutate "track.wav" \
   --title "Dawn of Genesis" \
   --artist "AI Orchestrator" \
   --album "Cyber Odyssey" \
@@ -69,16 +69,16 @@ python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\audio-me
 ### 3. Extract Embedded Cover Artwork & Lyrics
 ```bash
 # Extract cover image
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\audio-metadata-manager\scripts\audio_metadata_cli.py" extract-cover "track.flac" "extracted_cover.jpg"
+python ./scripts/audio_metadata_cli.py extract-cover "track.flac" "extracted_cover.jpg"
 
 # Extract embedded lyrics
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\audio-metadata-manager\scripts\audio_metadata_cli.py" extract-lyrics "track.mp3" "extracted_lyrics.lrc"
+python ./scripts/audio_metadata_cli.py extract-lyrics "track.mp3" "extracted_lyrics.lrc"
 ```
 
 ### 4. CI/CD Audit & Quality Gate
 ```bash
 # Audit a single file or directory
-python "C:\Users\Reaticle\.gemini\config\plugins\media-processor\skills\audio-metadata-manager\scripts\audio_metadata_cli.py" audit "./dist_tracks" \
+python ./scripts/audio_metadata_cli.py audit "./dist_tracks" \
   --require "title,artist,album,artwork,lyrics" \
   --min-cover-res "500x500" \
   --require-synced-lyrics \

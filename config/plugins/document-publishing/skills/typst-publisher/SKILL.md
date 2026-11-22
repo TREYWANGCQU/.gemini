@@ -42,7 +42,7 @@ flowchart TD
 ## 步骤 3: 调度内置样式注水引擎
 执行标准化 CLI 命令：
 ```bash
-python "C:\Users\Reaticle\.gemini\config\plugins\document-publishing\skills\typst-publisher\scripts\publisher.py" --input <path_to_typ> --output <path_to_docx> --template <path_to_reference_docx>
+python ./scripts/publisher.py --input <path_to_typ> --output <path_to_docx> --template <path_to_reference_docx>
 ```
 
 ## 步骤 4: 运行质量门禁审查 (Quality Gate)
