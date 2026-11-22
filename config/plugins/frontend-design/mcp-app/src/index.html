@@ -1,0 +1,157 @@
+<!-- config/plugins/frontend-design/mcp-app/src/index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frontend Design Studio &amp; Quality Gate</title>
+    <style>
+      :root {
+        --bg-primary: var(--color-background-primary, #0f172a);
+        --bg-secondary: var(--color-background-secondary, #1e293b);
+        --text-primary: var(--color-text-primary, #f8fafc);
+        --text-secondary: var(--color-text-secondary, #94a3b8);
+        --border-color: var(--color-border-primary, rgba(148, 163, 184, 0.24));
+        --accent: var(--color-ring-primary, #38bdf8);
+        --success: var(--color-text-success, #22c55e);
+        --danger: var(--color-text-danger, #ef4444);
+        --warning: var(--color-text-warning, #f59e0b);
+        --font-sans-base: var(--font-sans, system-ui, -apple-system, 'PingFang SC', sans-serif);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-sans-base);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 16px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid var(--border-color);
+      }
+
+      .badge.pass {
+        color: var(--success);
+        border-color: var(--success);
+      }
+
+      .badge.fail {
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+
+      .badge.warn {
+        color: var(--warning);
+        border-color: var(--warning);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .swatch {
+        height: 44px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 8px;
+      }
+
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .section-title {
+        margin: 16px 0 8px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .scale-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+
+      .svg-stage {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px;
+        overflow: auto;
+        margin-bottom: 16px;
+      }
+
+      .svg-stage svg {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .empty {
+        color: var(--text-secondary);
+        font-size: 13px;
+        padding: 24px;
+        text-align: center;
+        border: 1px dashed var(--border-color);
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="empty">Waiting for Frontend Design tool result...</div>
+    </div>
+    <!-- APP_BUNDLE -->
+  </body>
+</html>

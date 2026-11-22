@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "frontend-design-ui": {
+      "command": "node",
+      "args": ["${PLUGIN_ROOT}/mcp-app/dist/server.mjs"]
+    }
+  }
+}
