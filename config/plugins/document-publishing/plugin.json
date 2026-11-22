@@ -1,6 +1,12 @@
 {
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "document-publishing",
   "displayName": "Document Publishing",
   "version": "1.0.0",
-  "description": "Curated collection of agent skills for document publishing, Word/Docx reverse engineering, and Typst typesetting."
+  "description": "Curated collection of agent skills for document publishing, Word/Docx reverse engineering, and Typst typesetting.",
+  "suggestedPrompts": [
+    "解析并预览指定的 Word (.docx) 或 Excel (.xlsx) 文档结构与核心内容",
+    "从标杆 Word 模板提取样式指纹，生成合规的 reference.docx 基线",
+    "使用 Typst 编写技术方案文档并编译导出为高保真 Word/PDF 交付件"
+  ]
 }

@@ -1,6 +1,12 @@
 {
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "creative-writing",
   "displayName": "Creative Writing",
   "version": "1.0.0",
-  "description": "Curated collection of agent skills for in-depth insights, reflective essays, industry research reports, and academic papers."
+  "description": "Curated collection of agent skills for in-depth insights, reflective essays, industry research reports, and academic papers.",
+  "suggestedPrompts": [
+    "用中文深度专栏风格撰写一篇技术架构复盘与管理思考文章",
+    "Draft a reflective English essay with measured pacing and clear observations",
+    "编写一份面向数字化转型与基础设施项目的中文行业研报"
+  ]
 }

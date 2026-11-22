@@ -1,6 +1,12 @@
 {
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "media-processor",
   "displayName": "Media Processor",
   "version": "1.0.0",
-  "description": "Curated collection of agent skills for lossless audio metadata management and AI lyrics millisecond-level alignment."
+  "description": "Curated collection of agent skills for lossless audio metadata management and AI lyrics millisecond-level alignment.",
+  "suggestedPrompts": [
+    "无损检查并批量更新音频文件（MP3/FLAC/WAV）的标签元数据与封面",
+    "从 AI 音乐提示词与干声轨中提取并对齐毫秒级 LRC/SRT 歌词时间轴",
+    "对目录中的音频文件执行元数据规范审计与缺失标签修复"
+  ]
 }

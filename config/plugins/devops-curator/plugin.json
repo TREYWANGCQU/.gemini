@@ -1,6 +1,12 @@
 {
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "devops-curator",
   "displayName": "DevOps Curator",
   "version": "1.0.0",
-  "description": "Curated collection of agent skills for release notes cataloging, changelog generation, and GitHub Wiki CI deployment."
+  "description": "Curated collection of agent skills for release notes cataloging, changelog generation, and GitHub Wiki CI deployment.",
+  "suggestedPrompts": [
+    "分析当前仓库自上次 Tag 以来的变更，生成标准 Release Notes 与 CHANGELOG",
+    "检查并同步更新当前项目的 GitHub Wiki 目录结构与 CI 流水线",
+    "总结最近一次发布版本的核心功能跃迁、破坏性变更与升级指引"
+  ]
 }

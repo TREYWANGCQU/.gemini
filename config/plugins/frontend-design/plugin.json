@@ -1,6 +1,12 @@
 {
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "frontend-design",
   "displayName": "Frontend Design",
   "version": "1.0.0",
-  "description": "Curated collection of agent skills for vector SVG design, design token contracts, and frontend typography guardrails."
+  "description": "Curated collection of agent skills for vector SVG design, design token contracts, and frontend typography guardrails.",
+  "suggestedPrompts": [
+    "生成符合 12px 最小字阶与包围盒规范的架构图 SVG 矢量文件",
+    "根据风格诉求生成 design-tokens.json、tokens.css 与图表主题配置",
+    "在当前项目中初始化局部 SVG 生成技能脚手架与质检契约"
+  ]
 }

@@ -69,6 +69,11 @@ For complex systems, multi-file architectural changes, or `/plan` integrations, 
 ## Proposed Changes
 - **Architecture & System Decomposition**: Explicitly separating internal business boundaries from host/protocol physical boundaries, data flow and mathematical modeling.
 - **Work Breakdown Structure (WBS)**: Detailed phases, tasks, and concrete file impact list.
+- **Execution Topology Recommendation (编排拓扑选型建议)**: Based on task complexity and concurrency profile, explicitly annotate the recommended execution topology in the WBS:
+  - `Single`: Single-point lightweight tasks or linear flows executed directly in the main session (`/collector` -> `/analyzer` -> `/builder`).
+  - `Subagent`: Single isolated research, verification, or browser task delegated via `invoke_subagent`.
+  - `run_workflow`: Programmatic fan-out, staged pipelines, or schema-enforced aggregation (e.g., parallel `/collector` + `/researcher` fact grounding, batch file audits) orchestrated via `run_workflow`.
+  - `/swarm`: Long-running, cross-module parallel authoring with shared message board and isolated workspaces (`workspace: "share"`). *(Platform constraint: never auto-invoke `/swarm` unprompted; only annotate as recommended and prompt the user to explicitly trigger `/swarm`.)*
 
 ## Verification Plan
 - **Acceptance Criteria**: Hard criteria and quality gates.
