@@ -37,6 +37,7 @@ For document projects:
 - **受限写入范围 (Restricted Write Scope)**：仅限向目标文档已声明的 `### Verified Facts`、`### 基础事实与资产基准` 或 `<!-- FACTS_START --> ... <!-- FACTS_END -->` 锚点区内部追加/更新事实。若无显式锚点，在文件末尾以标准 Markdown 附录形式创建 `## 附录：已验证事实增量 (Verified Facts Delta)`。
 - **严禁越界行为**：严禁篡改方案中的“设计目标、技术架构、交互流程、验收指标”等逻辑推论段落。
 - **漂移预警 (Drift Alert)**：若发现新增事实推翻了方案现有章节的核心假定，**禁止自行修改正文**，必须输出警告：`> [!WARNING] FACT DRIFT DETECTED: 请触发 /analyzer 重新评估架构影响`。
+- **Wave-0 并行锚定兼容 (Default-Off)**：日常默认单会话只读运行；当经人工确认在 `run_workflow` Wave-0 中与 `/researcher` 并发执行时，按分节清单或 `preview_tree.py --json` 输出结构化事实，禁止越界写入外部调研章节。
 
 # Auxiliary Tooling (辅助工具)
 

@@ -33,6 +33,15 @@ When context is marked with `/goal` or autonomous goal-seeking mode is active:
    - **自愈预算硬上限 (Self-Healing Budget)**: 自愈闭环（诊断-补丁-重测）单次问题严格限制在 $\le 3$ 轮迭代以内；超过限额必须立即触发熔断上报，防止死循环耗尽 Token。
    - **外生硬故障穿透通道 (External Fatal Fault Bypass - 防故障掩码)**: 当捕获到不可自愈的外生环境异常（如系统权限不足、宿主缺失关键底层依赖、网络物理阻断、API 凭证失效）时，严禁继续盲目自愈或掩码（Fault Masking），必须立即携带原始关键错误证据向用户穿透上报，确保真实故障无损暴露。
 
+# Parallel Execution & Worker Contract (Default-Off)
+
+- **Default Serial Enforcement**: 默认在主会话单线程串行交付；**严禁未经人工显式确认擅自拉起 `run_workflow` 或 `/teamwork`（`swarm`）**。
+- **Orchestrator Delegation**: 仅当用户已显式批准并行波次时，按需加载 `/orchestrator` 执行 `run_workflow` 调度或生成 `/teamwork` 启动 Brief。
+- **Parallel Worker Mode**: 当作为 `run_workflow` 或 `/teamwork` 的隔离 Worker（`workspace="share"`）执行单个 WBS 时：
+  1. **独占写锁铁律**：严禁修改分配的 Write-Lock Scope 之外的任何文件；
+  2. **统一 4 态返回**：严格按 `passed | retryable_failed | needs_human_decision | external_fatal` 与 `error_signature` 契约通过 `finish` 回传；
+  3. **收紧熔断口径**：并行 Worker 遵循波次级熔断（连续失败 $>2$ 次或同 `error_signature` 重复 2 次即停机上报），区别于单会话 `/goal` 的 $\le 3$ 轮预算。
+
 # Responsibilities
 
 Software

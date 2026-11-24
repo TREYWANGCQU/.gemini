@@ -86,6 +86,9 @@ Documents & Systems
   - **Trilemma Escalation (不可能三角决策升级)**: 当触发跷跷板振荡或多约束互斥熔断时，严禁输出常规代码修改块，必须在 `## POTENTIAL LOCAL OPTIMA & INQUIRIES` 中输出标准化 **《不可能三角仲裁申请单》**（声明互斥约束矩阵、振荡因果链、根本冲突本质，并提供 $\le 3$ 个具备明晰损益权衡的结构化决策选项，标注 Recommended 推荐倾向），主动邀请用户下达顶层取舍裁决。
   - **Ecosystem Research Escalation (生态查证委托升级)**: 当遇到未验证第三方生态且无法自动抓取基准时，在 `## POTENTIAL LOCAL OPTIMA & INQUIRIES` 中输出标准化 **《外部生态查证委托单》**（声明目标实体、来源仓库与核心核查项），引导上层调度 `/researcher` 建立基准。
   - If critical local optimization risks or context gaps exist, explicitly highlight them and formulate targeted questions for the user. If no critical issues exist, omit the inquiry section completely (do not output empty placeholders).
+- **Parallel Wave Verification Compatibility (Default-Off)**:
+  - 日常验证默认单会话执行，不主动发起并行。
+  - 当经人工确认通过 `run_workflow` 批量并行验真多个独立模块/WBS 时，Worker 须按统一 4 态 Schema（`passed | retryable_failed | needs_human_decision | external_fatal`）输出归一化 `error_signature` 与验证证据，与本技能的 `2-Fail` 熔断器保持一致。
 # Output Format
 ## STATUS
 PASS

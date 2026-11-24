@@ -69,11 +69,15 @@ For complex systems, multi-file architectural changes, or `/plan` integrations, 
 ## Proposed Changes
 - **Architecture & System Decomposition**: Explicitly separating internal business boundaries from host/protocol physical boundaries, data flow and mathematical modeling.
 - **Work Breakdown Structure (WBS)**: Detailed phases, tasks, and concrete file impact list.
-- **Execution Topology Recommendation (编排拓扑选型建议)**: Based on task complexity and concurrency profile, explicitly annotate the recommended execution topology in the WBS:
-  - `Single`: Single-point lightweight tasks or linear flows executed directly in the main session (`/collector` -> `/analyzer` -> `/builder`).
-  - `Subagent`: Single isolated research, verification, or browser task delegated via `invoke_subagent`.
-  - `run_workflow`: Programmatic fan-out, staged pipelines, or schema-enforced aggregation (e.g., parallel `/collector` + `/researcher` fact grounding, batch file audits) orchestrated via `run_workflow`.
-  - `/swarm`: Long-running, cross-module parallel authoring with shared message board and isolated workspaces (`workspace: "share"`). *(Platform constraint: never auto-invoke `/swarm` unprompted; only annotate as recommended and prompt the user to explicitly trigger `/swarm`.)*
+- **Execution Topology Recommendation & Opt-In Gate (编排拓扑选型与默认关闭门禁)**:
+  - **Default-Off Baseline**: 默认严格采用 `Single`（单会话串行流 `/collector` -> `/analyzer` -> `/builder`），对常规/单点/强串行任务严禁弹窗打扰或擅自启动并行。
+  - **Parallel Trigger Threshold (并行评估门槛)**: 仅当同时满足 4 项条件时才激活并行评估：① 存在 $\ge 2$ 个无依赖 WBS 或独立专题；② 文件写域可严格正交切分（Disjoint Write-Lock）；③ L2 接口契约已冻结或可设前置同步屏障；④ 并行收益显著大于协调开销。
+  - **Mandatory DAG & Write-Lock Output**: 满足并行门槛时，WBS 必须显式给出 **波次表（Wave）、契约同步屏障、独占文件写域（Write-Lock Scope）** 及各波次推荐拓扑：
+    - `Single` *(Default)*: 单会话串行推进。
+    - `Subagent`: 单点隔离或并发度 $= 2$ 的轻量独立任务（`invoke_subagent`）。
+    - `run_workflow`: 结构化 DAG 波次、批量审计/调研（如 `collector` ∥ `researcher`）或需代码级卡死 $>2$ 次熔断与 4 态 JSON Schema 约束的并行任务。
+    - `/teamwork` (`/swarm`): 开放式跨模块协作与消息板协商。*(平台红线：严禁擅自调用 `swarm` 工具，仅在用户确认后生成启动 Brief 并由用户手动输入 `/teamwork` 触发。)*
+  - **Human-Confirmed Opt-In Gate (人工显式确认)**: 满足并行门槛时，在方案末尾通过 `ask_question` 提供 $\le 3$ 项结构化选择（默认项为 `Single` 串行，备选 `run_workflow` 与 `/teamwork`）；**仅在人工显式确认后**，方可按需加载 `/orchestrator` 启动对应并行机制。
 
 ## Verification Plan
 - **Acceptance Criteria**: Hard criteria and quality gates.

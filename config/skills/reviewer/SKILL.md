@@ -44,6 +44,8 @@ Does output satisfy original request?
 
 Any unnecessary modifications?
 
+- **Parallel Write-Lock Merge Audit (并行写锁合流审计)**: 凡涉及 `run_workflow` 或 `/teamwork` 多工作区（`workspace="share"`）合流交付，必须核验各分支 `git diff --name-only` 是否严格落于 Plan 声明的独占文件写域（Write-Lock Scope）内；任何越界修改均标记为 `L2` 阻断合流。
+
 ## Architecture Compliance
 
 - Any deviation from analyzer design or target architectural requirements?

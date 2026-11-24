@@ -36,6 +36,10 @@ Research Tasks
 - Verify industry reports
 - Verify academic references
 
+Parallel Wave-0 Compatibility (Default-Off)
+
+- 日常默认单会话执行；当经人工确认在 `run_workflow` 中以多专题 fan-out 或与 `/collector` 并发执行时，按要求的结构化分节或 JSON `finish` Schema 返回 `Verified Facts` 与 `Evidence Sources`，不触碰本地工作区文件。
+
 # Evidence Classification
 
 Level A
